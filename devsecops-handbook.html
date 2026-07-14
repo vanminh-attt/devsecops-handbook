@@ -1,0 +1,1653 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cẩm nang DevSecOps — Lộ trình từ số 0</title>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg:#F4F7F6; --panel:#FFFFFF; --ink:#1D2A27; --muted:#5B6E69; --line:#DCE5E2;
+  --accent:#0E7C66; --accent-ink:#0A5D4D; --accent-soft:#E2F1ED;
+  --amber:#B4620B; --amber-soft:#FBF0E1;
+  --danger:#B3372F; --danger-soft:#F9E9E7;
+  --code-bg:#152220; --code-ink:#D8E6E1; --code-line:#23413B;
+  --mark:#FFE9A8; --mark-ink:#4a3a00;
+  --shadow:0 1px 2px rgba(29,42,39,.06),0 4px 16px rgba(29,42,39,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0F1715; --panel:#16211E; --ink:#DEE9E5; --muted:#8FA39D; --line:#26332F;
+    --accent:#3FC49E; --accent-ink:#6BD8B9; --accent-soft:#12352C;
+    --amber:#E0A458; --amber-soft:#3A2B14;
+    --danger:#E07A70; --danger-soft:#3B211E;
+    --code-bg:#0B1211; --code-ink:#CFE0DA; --code-line:#1E2C28;
+    --mark:#8A6D1A; --mark-ink:#FFF3C4;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1715; --panel:#16211E; --ink:#DEE9E5; --muted:#8FA39D; --line:#26332F;
+  --accent:#3FC49E; --accent-ink:#6BD8B9; --accent-soft:#12352C;
+  --amber:#E0A458; --amber-soft:#3A2B14;
+  --danger:#E07A70; --danger-soft:#3B211E;
+  --code-bg:#0B1211; --code-ink:#CFE0DA; --code-line:#1E2C28;
+  --mark:#8A6D1A; --mark-ink:#FFF3C4;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.3);
+}
+:root[data-theme="light"]{
+  --bg:#F4F7F6; --panel:#FFFFFF; --ink:#1D2A27; --muted:#5B6E69; --line:#DCE5E2;
+  --accent:#0E7C66; --accent-ink:#0A5D4D; --accent-soft:#E2F1ED;
+  --amber:#B4620B; --amber-soft:#FBF0E1;
+  --danger:#B3372F; --danger-soft:#F9E9E7;
+  --code-bg:#152220; --code-ink:#D8E6E1; --code-line:#23413B;
+  --mark:#FFE9A8; --mark-ink:#4a3a00;
+  --shadow:0 1px 2px rgba(29,42,39,.06),0 4px 16px rgba(29,42,39,.05);
+}
+
+/* ============ BASE ============ */
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} *{animation:none!important;transition:none!important} }
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  font-size:15.5px; line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+code,pre,kbd{font-family:"Cascadia Code","Cascadia Mono",Consolas,"SF Mono",Menlo,monospace}
+a{color:var(--accent-ink);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+h1,h2,h3,h4{line-height:1.25;text-wrap:balance;font-weight:650}
+h2{font-size:23px;margin:0 0 14px}
+h3{font-size:17.5px;margin:34px 0 10px;color:var(--ink)}
+h4{font-size:15.5px;margin:26px 0 8px}
+p{margin:0 0 14px;max-width:76ch}
+ul,ol{margin:0 0 16px;padding-left:24px;max-width:76ch}
+li{margin-bottom:5px}
+strong{font-weight:650}
+hr{border:none;border-top:1px solid var(--line);margin:28px 0}
+
+/* ============ LAYOUT ============ */
+.sidebar{
+  position:fixed;top:0;left:0;bottom:0;width:302px;z-index:40;
+  background:var(--panel);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;
+}
+.main{margin-left:302px;padding:0 44px 100px;max-width:1020px}
+@media (max-width:920px){
+  .sidebar{transform:translateX(-100%);transition:transform .2s ease;box-shadow:none;width:300px}
+  .sidebar.open{transform:translateX(0);box-shadow:0 0 0 100vmax rgba(0,0,0,.35)}
+  .main{margin-left:0;padding:0 18px 80px}
+  .menu-btn{display:flex!important}
+}
+.menu-btn{
+  display:none;position:fixed;top:14px;left:14px;z-index:50;
+  align-items:center;gap:8px;padding:8px 14px;border-radius:8px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink);font:600 13px/1 "Segoe UI",system-ui,sans-serif;cursor:pointer;box-shadow:var(--shadow);
+}
+
+/* ============ SIDEBAR ============ */
+.brand{padding:22px 20px 14px;border-bottom:1px solid var(--line)}
+.brand .kicker{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.brand h1{font-size:17px;margin:4px 0 2px;font-weight:700}
+.brand p{font-size:12.5px;color:var(--muted);margin:0}
+.searchwrap{padding:12px 16px;border-bottom:1px solid var(--line);position:relative}
+.searchwrap input{
+  width:100%;padding:9px 12px 9px 34px;border-radius:8px;border:1px solid var(--line);
+  background:var(--bg);color:var(--ink);font-size:13.5px;font-family:inherit;
+}
+.searchwrap input::placeholder{color:var(--muted)}
+.searchwrap .sicon{position:absolute;left:27px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:13px}
+.results{
+  position:absolute;left:12px;right:12px;top:calc(100% - 4px);z-index:60;
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:var(--shadow);
+  max-height:400px;overflow-y:auto;display:none;
+}
+.results.show{display:block}
+.results .r-item{display:block;padding:10px 14px;border-bottom:1px solid var(--line);cursor:pointer}
+.results .r-item:last-child{border-bottom:none}
+.results .r-item:hover,.results .r-item.sel{background:var(--accent-soft)}
+.results .r-chap{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);font-weight:700}
+.results .r-head{font-size:13.5px;font-weight:650;margin:1px 0}
+.results .r-snip{font-size:12px;color:var(--muted);line-height:1.5}
+.results .r-empty{padding:14px;font-size:13px;color:var(--muted)}
+mark{background:var(--mark);color:var(--mark-ink);border-radius:2px;padding:0 1px}
+.toc{overflow-y:auto;flex:1;padding:10px 0 30px}
+.toc a{
+  display:flex;gap:10px;align-items:baseline;padding:6px 20px;color:var(--ink);
+  font-size:13.5px;border-left:3px solid transparent;
+}
+.toc a:hover{background:var(--accent-soft);text-decoration:none}
+.toc a.active{border-left-color:var(--accent);background:var(--accent-soft);font-weight:650}
+.toc a .num{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:18px;font-weight:600}
+.toc a.sub{padding-left:48px;font-size:12.5px;color:var(--muted)}
+.toc a.sub:hover{color:var(--ink)}
+.toc a.hidden{display:none}
+
+/* ============ HERO ============ */
+.hero{padding:52px 0 8px}
+.hero .kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink);font-weight:700;margin-bottom:10px}
+.hero h1{font-size:clamp(26px,4vw,38px);margin:0 0 12px;font-weight:750;letter-spacing:-.01em}
+.hero .lead{font-size:16.5px;color:var(--muted);max-width:66ch}
+.pipe{
+  display:flex;align-items:stretch;gap:0;margin:28px 0 8px;overflow-x:auto;padding-bottom:6px;
+}
+.pipe .stage{
+  flex:1;min-width:96px;text-align:center;padding:12px 8px;position:relative;
+  background:var(--panel);border:1px solid var(--line);border-right:none;
+}
+.pipe .stage:first-child{border-radius:10px 0 0 10px}
+.pipe .stage:last-child{border-right:1px solid var(--line);border-radius:0 10px 10px 0}
+.pipe .stage .t{font-weight:700;font-size:13px}
+.pipe .stage .s{font-size:11px;color:var(--muted)}
+.pipe .stage.sec{background:var(--amber-soft)}
+.pipe .stage.sec .t{color:var(--amber)}
+
+/* ============ SECTIONS ============ */
+section.chapter{padding-top:46px;margin-top:10px}
+section.chapter + section.chapter{border-top:1px solid var(--line);margin-top:44px}
+.chap-kicker{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent-ink);font-weight:700;margin-bottom:6px}
+.chap-kicker .n{display:inline-block;background:var(--accent);color:#fff;border-radius:5px;padding:1px 7px;margin-right:8px;font-variant-numeric:tabular-nums}
+:root[data-theme="dark"] .chap-kicker .n{color:#08201A}
+@media (prefers-color-scheme: dark){ .chap-kicker .n{color:#08201A} }
+:root[data-theme="light"] .chap-kicker .n{color:#fff}
+
+/* ============ COMPONENTS ============ */
+.tablewrap{overflow-x:auto;margin:14px 0 22px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{
+  text-align:left;padding:10px 14px;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);border-bottom:1px solid var(--line);white-space:nowrap;font-weight:700;
+}
+td{padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td code{font-size:12.5px;background:var(--accent-soft);color:var(--accent-ink);padding:1px 6px;border-radius:5px;white-space:nowrap}
+p code,li code{font-size:13px;background:var(--accent-soft);color:var(--accent-ink);padding:1px 6px;border-radius:5px}
+pre{
+  background:var(--code-bg);color:var(--code-ink);border-radius:10px;
+  padding:16px 18px;overflow-x:auto;font-size:12.8px;line-height:1.6;margin:12px 0 20px;
+  border:1px solid var(--code-line);position:relative;
+}
+pre code{background:none;color:inherit;padding:0}
+pre .c{color:#7FA396}
+pre .k{color:#7FD4BC}
+pre .s{color:#E7C98A}
+pre.diagram{font-size:12px;line-height:1.45}
+.copy-btn{
+  position:absolute;top:8px;right:8px;font:600 11px/1 "Segoe UI",system-ui,sans-serif;
+  background:rgba(255,255,255,.08);color:var(--code-ink);border:1px solid var(--code-line);
+  border-radius:6px;padding:5px 9px;cursor:pointer;opacity:0;transition:opacity .12s;
+}
+pre:hover .copy-btn,.copy-btn:focus-visible{opacity:1}
+.copy-btn:hover{background:rgba(255,255,255,.16)}
+.callout{
+  border-radius:10px;padding:13px 16px;margin:16px 0 20px;font-size:14px;
+  background:var(--accent-soft);border-left:4px solid var(--accent);max-width:80ch;
+}
+.callout .label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:750;color:var(--accent-ink);display:block;margin-bottom:3px}
+.callout.warn{background:var(--amber-soft);border-left-color:var(--amber)}
+.callout.warn .label{color:var(--amber)}
+.callout.danger{background:var(--danger-soft);border-left-color:var(--danger)}
+.callout.danger .label{color:var(--danger)}
+.callout p{margin:0}
+.callout p + p{margin-top:8px}
+.phase{
+  background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:20px 22px;margin:0 0 16px;box-shadow:var(--shadow);
+}
+.phase .ph-top{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;margin-bottom:6px}
+.phase .ph-num{
+  font-size:11px;font-weight:750;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent-ink);background:var(--accent-soft);border-radius:6px;padding:3px 9px;
+}
+.phase .ph-time{font-size:12px;color:var(--muted);font-weight:600}
+.phase h3{margin:0 0 8px;font-size:17px}
+.phase .deliver{
+  margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);
+  font-size:13.5px;color:var(--muted);
+}
+.phase .deliver b{color:var(--ink)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin:14px 0 22px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
+.card h4{margin:0 0 6px;font-size:14.5px}
+.card p{font-size:13.5px;color:var(--muted);margin:0}
+.checklist{list-style:none;padding-left:2px}
+.checklist li{padding-left:26px;position:relative}
+.checklist li::before{
+  content:"✓";position:absolute;left:0;top:0;color:var(--accent);font-weight:800;
+}
+.backtop{display:inline-block;margin-top:26px;font-size:12.5px;color:var(--muted)}
+.flash{animation:flash 1.6s ease-out 1}
+@keyframes flash{0%{background:var(--mark)}100%{background:transparent}}
+.footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--muted)}
+</style>
+
+<button class="menu-btn" id="menuBtn" aria-label="Mở mục lục">☰ Mục lục</button>
+
+<nav class="sidebar" id="sidebar" aria-label="Mục lục">
+  <div class="brand">
+    <div class="kicker">DevSecOps Handbook</div>
+    <h1>Cẩm nang DevSecOps</h1>
+    <p>CI/CD · Docker · Kubernetes · Jenkins · GitLab · Argo CD · Bảo mật SDLC</p>
+  </div>
+  <div class="searchwrap">
+    <span class="sicon">🔍</span>
+    <input type="search" id="searchBox" placeholder="Tìm kiếm (gõ không dấu cũng được)…" autocomplete="off" aria-label="Tìm kiếm nội dung">
+    <div class="results" id="results" role="listbox"></div>
+  </div>
+  <div class="toc" id="toc">
+    <a href="#gioi-thieu"><span class="num">01</span>Bắt đầu ở đây — giải mã JD</a>
+    <a href="#devsecops"><span class="num">02</span>DevSecOps là gì</a>
+    <a href="#lo-trinh"><span class="num">03</span>Lộ trình học 6 giai đoạn</a>
+    <a href="#nen-tang"><span class="num">04</span>Nền tảng: Linux · Git · Mạng</a>
+    <a href="#docker"><span class="num">05</span>Docker chuyên sâu</a>
+    <a class="sub" href="#docker-arch">Kiến trúc &amp; khái niệm</a>
+    <a class="sub" href="#dockerfile">Dockerfile &amp; multi-stage</a>
+    <a class="sub" href="#docker-cheat">Cheatsheet lệnh</a>
+    <a class="sub" href="#docker-sec">Bảo mật Docker</a>
+    <a href="#kubernetes"><span class="num">06</span>Kubernetes chuyên sâu</a>
+    <a class="sub" href="#k8s-arch">Kiến trúc cluster</a>
+    <a class="sub" href="#k8s-objects">Các object cốt lõi + YAML</a>
+    <a class="sub" href="#k8s-cheat">kubectl cheatsheet</a>
+    <a class="sub" href="#k8s-helm">Helm</a>
+    <a class="sub" href="#k8s-sec">Bảo mật Kubernetes</a>
+    <a href="#cicd-jenkins"><span class="num">07</span>CI/CD &amp; Jenkins</a>
+    <a class="sub" href="#pipeline-la-gi">Pipeline là gì — giải phẫu</a>
+    <a class="sub" href="#jenkins-arch">Kiến trúc &amp; cài đặt</a>
+    <a class="sub" href="#jenkinsfile">Jenkinsfile DevSecOps mẫu</a>
+    <a class="sub" href="#cicd-compare">So sánh GitHub Actions / GitLab CI</a>
+    <a href="#gitlab"><span class="num">08</span>GitLab CI/CD &amp; GitHub Actions</a>
+    <a class="sub" href="#gitlab-platform">GitLab là gì — bản đồ khái niệm</a>
+    <a class="sub" href="#gitlab-runner">Runner &amp; executor</a>
+    <a class="sub" href="#gitlab-yml">.gitlab-ci.yml từ A–Z</a>
+    <a class="sub" href="#gitlab-devsecops">Pipeline DevSecOps mẫu</a>
+    <a class="sub" href="#gitlab-secrets">Secrets &amp; protected branch</a>
+    <a class="sub" href="#github-actions">GitHub Actions an toàn</a>
+    <a class="sub" href="#golden-path">Golden Path &amp; template secure code</a>
+    <a class="sub" href="#kiro">Kiro — spec-driven &amp; secure</a>
+    <a href="#gitops-argocd"><span class="num">09</span>GitOps &amp; Argo CD</a>
+    <a class="sub" href="#argocd-arch">Kiến trúc &amp; cài đặt</a>
+    <a class="sub" href="#argocd-app">Application YAML &amp; sync</a>
+    <a class="sub" href="#argocd-hub">Hub-and-Spoke đa cluster</a>
+    <a href="#bao-mat-pipeline"><span class="num">10</span>Bảo mật pipeline (tool DevSecOps)</a>
+    <a class="sub" href="#sec-layers">10 lớp bảo vệ &amp; tool</a>
+    <a class="sub" href="#sec-commands">Lệnh mẫu từng tool</a>
+    <a class="sub" href="#sec-vault">Vault &amp; quản lý secrets</a>
+    <a href="#owasp"><span class="num">11</span>OWASP Top 10: Web · CI/CD</a>
+    <a class="sub" href="#owasp-web">Top 10 ứng dụng web</a>
+    <a class="sub" href="#owasp-cicd">Top 10 CI/CD (CICD-SEC)</a>
+    <a class="sub" href="#ppe">PPE &amp; sự cố thực tế</a>
+    <a class="sub" href="#supply-chain">SLSA · SBOM · Sigstore</a>
+    <a href="#kien-truc"><span class="num">12</span>Giải phẫu sơ đồ Multi-VPC của bạn</a>
+    <a class="sub" href="#arch-accounts">Các account &amp; VPC</a>
+    <a class="sub" href="#arch-flow">Luồng traffic &amp; CI/CD</a>
+    <a class="sub" href="#arch-hoc-gi">Học gì để hiểu sơ đồ này</a>
+    <a href="#iac-cloud"><span class="num">13</span>IaC &amp; Cloud: Terraform · Ansible</a>
+    <a href="#observability"><span class="num">14</span>Giám sát &amp; Runtime security</a>
+    <a href="#du-an"><span class="num">15</span>Dự án portfolio end-to-end</a>
+    <a href="#tai-nguyen"><span class="num">16</span>Tài nguyên · Chứng chỉ · Thuật ngữ</a>
+  </div>
+</nav>
+
+<div class="main">
+
+<header class="hero">
+  <div class="kicker">Từ con số 0 → đáp ứng JD DevSecOps · Cập nhật 07/2026</div>
+  <h1>Cẩm nang DevSecOps: CI/CD an toàn trong toàn bộ vòng đời phần mềm</h1>
+  <p class="lead">Toàn bộ kiến thức để "tham gia mô hình phát triển ứng dụng CI/CD, đảm bảo an toàn trong toàn bộ vòng đời phát triển phần mềm hướng tới DevSecOps" — kèm chương riêng giải thích sơ đồ multi-VPC (Diagram V2) của chính bạn. Dùng ô tìm kiếm bên trái để tra nhanh bất kỳ khái niệm, lệnh hay tool nào.</p>
+  <div class="pipe" aria-label="Pipeline DevSecOps tổng quan">
+    <div class="stage"><div class="t">Code</div><div class="s">Git · PR</div></div>
+    <div class="stage sec"><div class="t">Scan</div><div class="s">Gitleaks · SAST</div></div>
+    <div class="stage"><div class="t">Build</div><div class="s">Jenkins · Docker</div></div>
+    <div class="stage sec"><div class="t">Verify</div><div class="s">Trivy · Cosign</div></div>
+    <div class="stage"><div class="t">Deploy</div><div class="s">Argo CD · K8s</div></div>
+    <div class="stage sec"><div class="t">Test</div><div class="s">DAST · ZAP</div></div>
+    <div class="stage"><div class="t">Monitor</div><div class="s">Prometheus · Falco</div></div>
+  </div>
+</header>
+
+<!-- ================= 01 ================= -->
+<section class="chapter" id="gioi-thieu" data-chap="01 · Bắt đầu">
+  <div class="chap-kicker"><span class="n">01</span>Bắt đầu ở đây</div>
+  <h2>Giải mã yêu cầu tuyển dụng</h2>
+  <p>Câu JD <em>"Tham gia vào mô hình phát triển ứng dụng CI/CD, đảm bảo an toàn trong toàn bộ vòng đời phát triển phần mềm hướng tới DevSecOps"</em> thực chất gồm 3 lớp kỹ năng chồng lên nhau:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Cụm từ trong JD</th><th>Nghĩa là bạn phải làm được</th><th>Chương tương ứng</th></tr>
+    <tr><td><strong>Mô hình phát triển ứng dụng CI/CD</strong></td><td>Viết và vận hành pipeline: code push lên Git → tự động build, test, đóng gói, deploy. Tool: Jenkins, GitLab CI, GitHub Actions, Argo CD.</td><td>07, 08, 09</td></tr>
+    <tr><td><strong>An toàn trong toàn bộ vòng đời (SDLC)</strong></td><td>Gắn kiểm tra bảo mật vào <em>từng bước</em> của pipeline: quét secrets, SAST, SCA, quét image, DAST, ký image, quét IaC.</td><td>10, 11</td></tr>
+    <tr><td><strong>Hướng tới DevSecOps</strong></td><td>Hiểu văn hóa shift-left, quality gate, policy-as-code; và nền tảng để chạy được tất cả: Docker, Kubernetes, cloud, hạ tầng mạng.</td><td>02, 05, 06, 12, 13</td></tr>
+  </table></div>
+  <p><strong>Vì sao phải học cả Docker/K8s và kiến trúc mạng?</strong> Vì pipeline CI/CD hiện đại không deploy lên "một con server" nữa — nó build ra <strong>container image</strong> và deploy lên <strong>Kubernetes</strong>, chạy trong <strong>VPC</strong> trên cloud. Không hiểu container thì không hiểu mình đang build cái gì; không hiểu K8s thì không hiểu Argo CD deploy đi đâu; không hiểu VPC/subnet thì không đọc nổi sơ đồ hạ tầng như Diagram V2 của bạn. Ba thứ này là mặt đất mà pipeline đứng lên trên.</p>
+  <div class="callout"><span class="label">Cách dùng trang này</span>
+    <p>Đọc tuần tự chương 02 → 15 nếu học từ đầu. Khi làm việc thực tế, dùng ô <strong>tìm kiếm</strong> ở sidebar: gõ tên tool ("trivy", "argo"), khái niệm ("ingress", "rbac") hoặc tiếng Việt không dấu ("bao mat", "lo trinh") đều tra được. Mọi khối lệnh đều có nút <strong>Copy</strong> khi rê chuột vào.</p>
+  </div>
+</section>
+
+<!-- ================= 02 ================= -->
+<section class="chapter" id="devsecops" data-chap="02 · Khái niệm">
+  <div class="chap-kicker"><span class="n">02</span>Khái niệm nền</div>
+  <h2>DevSecOps là gì — và vì sao "shift-left"</h2>
+  <p><strong>DevOps</strong> là văn hóa + bộ công cụ giúp đội Dev và đội Ops làm việc như một: mọi thay đổi code được tự động build, test và deploy liên tục thay vì release thủ công vài tháng một lần. <strong>DevSecOps</strong> thêm chữ Sec vào giữa: bảo mật không còn là khâu "kiểm tra cuối cùng trước khi lên production" mà được <em>nhúng vào từng bước</em> của vòng đời phát triển phần mềm (SDLC).</p>
+  <h3 id="shift-left">Shift-left: nguyên tắc quan trọng nhất</h3>
+  <p>"Shift-left" nghĩa là đẩy việc phát hiện lỗ hổng về càng sớm (càng về bên trái của timeline) càng tốt. Lý do thuần túy là <strong>chi phí</strong>: một lỗ hổng phát hiện lúc dev đang gõ code sửa mất 5 phút; cũng lỗ hổng đó lọt ra production có thể thành sự cố bảo mật tốn hàng tuần xử lý và thiệt hại thật. Toàn bộ chương 10 là các "trạm kiểm soát" đặt dọc pipeline để làm việc này.</p>
+  <h3 id="sdlc">Vòng đời phát triển phần mềm (SDLC) và điểm chèn bảo mật</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Giai đoạn SDLC</th><th>Hoạt động bảo mật chèn vào</th><th>Tool đại diện</th></tr>
+    <tr><td>Thiết kế (Design)</td><td>Threat modeling — đặt câu hỏi "kẻ tấn công sẽ đánh vào đâu?"</td><td>OWASP Threat Dragon</td></tr>
+    <tr><td>Viết code (Develop)</td><td>Quét secrets, SAST ngay trong IDE và pre-commit hook</td><td>Gitleaks, Semgrep</td></tr>
+    <tr><td>Build (CI)</td><td>SAST, SCA (quét thư viện), quét container image, tạo SBOM, ký image</td><td>SonarQube, Trivy, Cosign</td></tr>
+    <tr><td>Deploy (CD)</td><td>Quét IaC, policy-as-code chặn cấu hình sai, GitOps có kiểm soát</td><td>Checkov, Kyverno, Argo CD</td></tr>
+    <tr><td>Vận hành (Operate)</td><td>DAST, giám sát runtime, phát hiện xâm nhập, SIEM</td><td>OWASP ZAP, Falco, GuardDuty</td></tr>
+  </table></div>
+  <h3 id="ci-cd-la-gi">Phân biệt CI / CD / CD</h3>
+  <ul>
+    <li><strong>Continuous Integration (CI):</strong> mỗi lần dev push code, hệ thống tự động build + chạy test + quét bảo mật. Mục tiêu: phát hiện code hỏng/nguy hiểm trong vài phút.</li>
+    <li><strong>Continuous Delivery:</strong> mọi bản build đạt chuẩn đều <em>sẵn sàng</em> deploy — nhưng bấm nút deploy vẫn là quyết định của con người (approval gate).</li>
+    <li><strong>Continuous Deployment:</strong> tự động deploy luôn không cần người bấm. Thường chỉ áp dụng cho môi trường dev/staging; production hầu như luôn giữ approval gate — đúng như sơ đồ của bạn đang vẽ (non-prod auto sync, prod có sync window + approval).</li>
+  </ul>
+  <div class="callout warn"><span class="label">Bảo mật</span><p>Bản thân pipeline cũng là mục tiêu tấn công (supply chain attack — vụ SolarWinds, Codecov là ví dụ kinh điển). Vì thế học DevSecOps không chỉ là "quét code của app" mà còn là <strong>bảo vệ chính pipeline</strong>: quản lý credentials của Jenkins, ký image, khóa quyền của Argo CD. Toàn bộ chương 11 dành riêng cho chủ đề này: OWASP CI/CD Security Top 10 và chuỗi cung ứng.</p></div>
+</section>
+
+<!-- ================= 03 ================= -->
+<section class="chapter" id="lo-trinh" data-chap="03 · Lộ trình">
+  <div class="chap-kicker"><span class="n">03</span>Lộ trình</div>
+  <h2>Lộ trình học 6 giai đoạn (~6–9 tháng)</h2>
+  <p>Đi <strong>tuần tự</strong>, không nhảy cóc: DevSecOps là tầng trên cùng của tháp, mỗi giai đoạn đứng trên giai đoạn trước. Mỗi giai đoạn có "sản phẩm đầu ra" — làm xong sản phẩm đó mới chuyển giai đoạn, vì đó chính là bằng chứng bạn mang đi phỏng vấn.</p>
+
+  <div class="phase">
+    <div class="ph-top"><span class="ph-num">Giai đoạn 0</span><span class="ph-time">3–4 tuần</span></div>
+    <h3>Nền tảng: Linux, Git, mạng, scripting</h3>
+    <ul>
+      <li>Linux: terminal, quyền file, systemd, SSH — dựng qua WSL2 ngay trên máy Windows của bạn.</li>
+      <li>Git: branching (GitFlow, trunk-based), Pull Request, merge/rebase — vì mọi pipeline đều kích hoạt từ Git.</li>
+      <li>Mạng: DNS, HTTP/HTTPS, TLS, port, firewall, CIDR (bắt buộc để hiểu VPC).</li>
+      <li>Bash bắt buộc + Python để viết automation.</li>
+    </ul>
+    <div class="deliver"><b>Sản phẩm:</b> một repo GitHub có script Bash tự động hóa việc bất kỳ (backup, parse log), làm việc hoàn toàn qua terminal.</div>
+  </div>
+
+  <div class="phase">
+    <div class="ph-top"><span class="ph-num">Giai đoạn 1</span><span class="ph-time">4–6 tuần</span></div>
+    <h3>CI/CD cốt lõi: Jenkins + GitHub Actions</h3>
+    <ul>
+      <li>Khái niệm pipeline, stage, artifact, runner/agent, webhook.</li>
+      <li>Jenkins: cài bằng Docker, viết Jenkinsfile (Declarative), credentials, plugin, Shared Libraries → chương 07.</li>
+      <li>GitLab CI + GitHub Actions học song song — cú pháp YAML đơn giản giúp hiểu bản chất nhanh hơn → chương 08.</li>
+      <li>Artifact repository: Nexus hoặc Harbor.</li>
+    </ul>
+    <div class="deliver"><b>Sản phẩm:</b> app nhỏ (Node/Python) + Jenkins pipeline tự build + chạy unit test mỗi lần push.</div>
+  </div>
+
+  <div class="phase">
+    <div class="ph-top"><span class="ph-num">Giai đoạn 2</span><span class="ph-time">6–8 tuần</span></div>
+    <h3>Docker → Kubernetes → GitOps với Argo CD</h3>
+    <ul>
+      <li>Docker: image/layer, Dockerfile multi-stage, network, volume, compose → chương 05.</li>
+      <li>Kubernetes: kiến trúc cluster, Pod/Deployment/Service/Ingress, ConfigMap/Secret, RBAC, Helm → chương 06. Lab bằng minikube hoặc kind.</li>
+      <li>Argo CD: triết lý GitOps, Application, sync policy, self-heal, rollback → chương 09.</li>
+    </ul>
+    <div class="deliver"><b>Sản phẩm:</b> app được đóng container, có Helm chart, Argo CD tự deploy lên minikube từ Git repo. Đây chính là mô hình <b>Jenkins lo CI, Argo CD lo CD</b> mà JD (và sơ đồ của bạn) mô tả.</div>
+  </div>
+
+  <div class="phase">
+    <div class="ph-top"><span class="ph-num">Giai đoạn 3</span><span class="ph-time">6–8 tuần</span></div>
+    <h3>DevSecOps: nhúng bảo mật vào pipeline</h3>
+    <ul>
+      <li>Gắn từng lớp vào pipeline giai đoạn 2, mỗi tuần một lớp: Gitleaks → SonarQube/Semgrep → Trivy (SCA + image) → Checkov → ZAP → Cosign + SBOM → chương 10.</li>
+      <li>Quality gate: fail pipeline khi có lỗ hổng Critical.</li>
+      <li>Vault để cấp secrets động; Kyverno chặn deploy sai chính sách trên K8s.</li>
+      <li>Kiến thức nền: OWASP Top 10, OWASP CI/CD Security Top 10, chuỗi cung ứng (SLSA/SBOM) → chương 11 — với nền infosec sẵn có, bạn sẽ đi nhanh phần này.</li>
+    </ul>
+    <div class="deliver"><b>Sản phẩm:</b> pipeline "full giáp" — mọi commit đi qua 6+ trạm kiểm soát bảo mật trước khi lên cluster.</div>
+  </div>
+
+  <div class="phase">
+    <div class="ph-top"><span class="ph-num">Giai đoạn 4</span><span class="ph-time">4–6 tuần · học xen kẽ được</span></div>
+    <h3>Hạ tầng: Terraform, Ansible, AWS, giám sát</h3>
+    <ul>
+      <li>Terraform dựng VPC/EC2/EKS bằng code; quét chính code đó bằng Checkov → chương 13.</li>
+      <li>AWS: VPC, subnet, IAM, security group, Transit Gateway — đủ để đọc hiểu 100% Diagram V2 → chương 12.</li>
+      <li>Prometheus + Grafana + Falco → chương 14.</li>
+    </ul>
+    <div class="deliver"><b>Sản phẩm:</b> Terraform module dựng được một VPC 3 lớp subnet giống thu nhỏ của sơ đồ bạn đang có.</div>
+  </div>
+
+  <div class="phase">
+    <div class="ph-top"><span class="ph-num">Giai đoạn 5</span><span class="ph-time">3–4 tuần</span></div>
+    <h3>Dự án portfolio end-to-end</h3>
+    <ul><li>Ghép tất cả thành một hệ thống hoàn chỉnh theo đề bài ở chương 15, viết README có sơ đồ kiến trúc, đưa lên GitHub.</li></ul>
+    <div class="deliver"><b>Sản phẩm:</b> 1 repo demo được trong phỏng vấn — giá trị hơn mọi chứng chỉ.</div>
+  </div>
+
+  <h3 id="lo-trinh-uu-tien">Nếu chỉ được chọn 6 thứ để thành thạo cho đúng JD này</h3>
+  <ol>
+    <li><strong>Git</strong> — cửa ngõ của mọi pipeline</li>
+    <li><strong>Docker</strong> — đơn vị đóng gói của mọi thứ</li>
+    <li><strong>Kubernetes</strong> — nơi mọi thứ chạy</li>
+    <li><strong>Jenkins</strong> — CI (build/test/scan)</li>
+    <li><strong>Argo CD</strong> — CD theo GitOps</li>
+    <li><strong>Trivy + SonarQube</strong> — cặp tool bảo mật phủ được nhiều lớp nhất</li>
+  </ol>
+</section>
+
+<!-- ================= 04 ================= -->
+<section class="chapter" id="nen-tang" data-chap="04 · Nền tảng">
+  <div class="chap-kicker"><span class="n">04</span>Nền tảng</div>
+  <h2>Linux · Git · Mạng · Scripting</h2>
+  <h3 id="linux-co-ban">Linux tối thiểu cần nắm</h3>
+  <p>Dựng lab ngay trên Windows: <code>wsl --install -d Ubuntu</code> trong PowerShell (Admin). Các nhóm lệnh phải thuộc:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Nhóm</th><th>Lệnh</th><th>Dùng khi</th></tr>
+    <tr><td>File &amp; thư mục</td><td><code>ls -la</code> <code>cd</code> <code>cp</code> <code>mv</code> <code>rm -rf</code> <code>find</code> <code>grep -r</code></td><td>Mọi lúc</td></tr>
+    <tr><td>Quyền</td><td><code>chmod 640</code> <code>chown</code> <code>sudo</code></td><td>Fix lỗi permission — lỗi phổ biến nhất khi mới học Docker/Jenkins</td></tr>
+    <tr><td>Tiến trình &amp; dịch vụ</td><td><code>ps aux</code> <code>top</code> <code>systemctl status/restart</code> <code>journalctl -u</code></td><td>Debug service không chạy</td></tr>
+    <tr><td>Mạng</td><td><code>ip a</code> <code>ss -tlnp</code> <code>curl -v</code> <code>dig</code> <code>ping</code></td><td>Debug "vì sao không kết nối được" — 50% thời gian làm DevOps</td></tr>
+    <tr><td>Text</td><td><code>cat</code> <code>less</code> <code>tail -f</code> <code>awk</code> <code>sed</code> <code>jq</code></td><td>Đọc log, xử lý JSON/YAML</td></tr>
+  </table></div>
+  <h3 id="git-workflow">Git workflow trong CI/CD</h3>
+  <pre><code><span class="c"># Vòng làm việc chuẩn theo Pull Request</span>
+git checkout -b feature/login-api     <span class="c"># tạo nhánh mới</span>
+git add . ; git commit -m "feat: add login API"
+git push -u origin feature/login-api  <span class="c"># push → webhook kích hoạt CI chạy pipeline</span>
+<span class="c"># Mở Pull Request → CI phải xanh + review OK → merge vào main</span>
+<span class="c"># Merge vào main → pipeline CD kích hoạt deploy</span></code></pre>
+  <p>Hai chiến lược nhánh cần biết tên: <strong>GitFlow</strong> (nhánh <code>develop</code>/<code>release</code>/<code>hotfix</code> — hợp release theo chu kỳ) và <strong>trunk-based</strong> (mọi người merge thẳng vào <code>main</code> qua PR nhỏ — hợp CI/CD tốc độ cao). Sơ đồ của bạn dùng biến thể: GitOps repo có nhánh <code>dev/test/stg/prod</code>, promote code giữa môi trường = merge giữa nhánh.</p>
+  <h3 id="cidr">CIDR — bắt buộc để hiểu VPC</h3>
+  <p><code>10.0.0.0/16</code> nghĩa là: 16 bit đầu cố định (10.0), 16 bit sau tự do → 65.536 địa chỉ IP từ 10.0.0.0 đến 10.0.255.255. Số sau dấu <code>/</code> càng lớn thì dải càng nhỏ: <code>/24</code> = 256 IP (một subnet điển hình). Trong Diagram V2 của bạn: Ingress VPC là <code>10.0.0.0/16</code>, Workload VPC là <code>10.10.0.0/16</code> — hai dải không chồng lấn để Transit Gateway route được giữa chúng.</p>
+</section>
+
+<!-- ================= 05 ================= -->
+<section class="chapter" id="docker" data-chap="05 · Docker">
+  <div class="chap-kicker"><span class="n">05</span>Docker</div>
+  <h2>Docker chuyên sâu</h2>
+
+  <h3 id="docker-arch">Kiến trúc và khái niệm cốt lõi</h3>
+  <p><strong>Container</strong> là một tiến trình Linux bình thường nhưng bị cô lập bằng 2 cơ chế của kernel: <strong>namespaces</strong> (mỗi container thấy cây tiến trình, mạng, filesystem riêng) và <strong>cgroups</strong> (giới hạn CPU/RAM). Khác máy ảo: container <em>dùng chung kernel</em> với host nên khởi động trong mili-giây và nhẹ hơn hàng chục lần — nhưng cũng vì dùng chung kernel nên bảo mật container là chủ đề riêng (mục cuối chương).</p>
+  <div class="tablewrap"><table>
+    <tr><th>Thành phần</th><th>Vai trò</th></tr>
+    <tr><td><strong>Docker CLI</strong></td><td>Lệnh <code>docker ...</code> bạn gõ — chỉ là client gửi yêu cầu tới daemon qua socket.</td></tr>
+    <tr><td><strong>dockerd</strong> (daemon)</td><td>Nhận yêu cầu, quản lý image/network/volume; ủy quyền chạy container cho containerd.</td></tr>
+    <tr><td><strong>containerd → runc</strong></td><td>Runtime thực sự tạo và chạy container. Kubernetes gọi thẳng containerd, không cần dockerd — vì thế kiến thức image/container mang nguyên sang K8s.</td></tr>
+    <tr><td><strong>Image</strong></td><td>Bản đóng gói bất biến (read-only) gồm nhiều <strong>layer</strong> xếp chồng. Container = image + 1 layer ghi tạm ở trên cùng.</td></tr>
+    <tr><td><strong>Registry</strong></td><td>Kho chứa image: Docker Hub (public), Harbor (tự host), ECR (AWS — cái trong sơ đồ của bạn).</td></tr>
+  </table></div>
+  <div class="callout"><span class="label">Vì sao layer quan trọng</span><p>Mỗi lệnh trong Dockerfile tạo một layer và được <strong>cache</strong>. Đặt thứ ít thay đổi (cài dependencies) lên trên, thứ hay thay đổi (copy source code) xuống dưới → build lại chỉ mất vài giây thay vì vài phút. Đây là câu hỏi phỏng vấn kinh điển.</p></div>
+
+  <h3 id="dockerfile">Dockerfile: từng lệnh và multi-stage build</h3>
+  <pre><code><span class="c"># ---- Stage 1: build (chứa toàn bộ toolchain, sẽ bị vứt đi) ----</span>
+<span class="k">FROM</span> node:22-alpine <span class="k">AS</span> build
+<span class="k">WORKDIR</span> /app
+<span class="k">COPY</span> package*.json ./          <span class="c"># copy riêng file deps trước → tận dụng layer cache</span>
+<span class="k">RUN</span> npm ci --omit=dev
+<span class="k">COPY</span> . .
+<span class="k">RUN</span> npm run build
+
+<span class="c"># ---- Stage 2: runtime (chỉ mang theo thứ cần để chạy) ----</span>
+<span class="k">FROM</span> node:22-alpine
+<span class="k">RUN</span> addgroup -S app &amp;&amp; adduser -S app -G app   <span class="c"># tạo user thường — KHÔNG chạy bằng root</span>
+<span class="k">WORKDIR</span> /app
+<span class="k">COPY</span> --from=build --chown=app:app /app/dist ./dist
+<span class="k">COPY</span> --from=build --chown=app:app /app/node_modules ./node_modules
+<span class="k">USER</span> app
+<span class="k">EXPOSE</span> 3000
+<span class="k">HEALTHCHECK</span> CMD wget -qO- http://localhost:3000/health || exit 1
+<span class="k">CMD</span> ["node", "dist/server.js"]</code></pre>
+  <div class="tablewrap"><table>
+    <tr><th>Lệnh</th><th>Ý nghĩa</th><th>Lưu ý</th></tr>
+    <tr><td><code>FROM</code></td><td>Image nền</td><td>Chọn tag cụ thể (<code>22-alpine</code>), không dùng <code>latest</code>; alpine/distroless nhỏ → ít lỗ hổng hơn</td></tr>
+    <tr><td><code>COPY</code> / <code>ADD</code></td><td>Chép file vào image</td><td>Luôn dùng COPY; ADD chỉ khi cần giải nén tar</td></tr>
+    <tr><td><code>RUN</code></td><td>Chạy lệnh lúc build</td><td>Gộp nhiều lệnh bằng <code>&amp;&amp;</code> để giảm layer</td></tr>
+    <tr><td><code>CMD</code> vs <code>ENTRYPOINT</code></td><td>Lệnh chạy lúc container start</td><td>ENTRYPOINT cố định, CMD là tham số mặc định có thể override — câu phỏng vấn kinh điển thứ hai</td></tr>
+    <tr><td><code>ENV</code> / <code>ARG</code></td><td>Biến môi trường / biến lúc build</td><td><strong>Không bao giờ</strong> nhét secrets vào đây — nó nằm vĩnh viễn trong layer</td></tr>
+    <tr><td><code>USER</code></td><td>User chạy container</td><td>Bắt buộc set user thường trong môi trường có yêu cầu bảo mật</td></tr>
+  </table></div>
+
+  <h3 id="docker-network-volume">Network và Volume</h3>
+  <ul>
+    <li><strong>bridge</strong> (mặc định): container cùng một network tự phân giải tên nhau (<code>db:5432</code>). Luôn tạo network riêng cho app: <code>docker network create mynet</code>.</li>
+    <li><strong>host</strong>: dùng thẳng network của máy host — nhanh nhưng mất cô lập.</li>
+    <li><strong>Volume</strong>: dữ liệu sống lâu hơn container. <code>docker volume create pgdata</code> rồi <code>-v pgdata:/var/lib/postgresql/data</code>. Bind mount (<code>-v ./src:/app</code>) dùng khi dev để code sync trực tiếp.</li>
+  </ul>
+  <h4>docker-compose — chạy nhiều container như một hệ</h4>
+  <pre><code><span class="c"># compose.yaml — dựng app + database + redis bằng 1 lệnh: docker compose up -d</span>
+services:
+  app:
+    build: .
+    ports: ["3000:3000"]
+    environment:
+      DATABASE_URL: postgres://app:secret@db:5432/appdb
+    depends_on: [db, cache]
+  db:
+    image: postgres:16-alpine
+    volumes: [pgdata:/var/lib/postgresql/data]
+    environment:
+      POSTGRES_PASSWORD: secret     <span class="c"># lab thôi — thực tế dùng secrets/Vault</span>
+  cache:
+    image: redis:7-alpine
+volumes:
+  pgdata:</code></pre>
+
+  <h3 id="docker-cheat">Cheatsheet lệnh Docker</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Lệnh</th><th>Tác dụng</th></tr>
+    <tr><td><code>docker run -d -p 8080:80 --name web nginx</code></td><td>Chạy nền, map port host 8080 → container 80</td></tr>
+    <tr><td><code>docker ps -a</code></td><td>Liệt kê container (kể cả đã dừng)</td></tr>
+    <tr><td><code>docker logs -f web</code></td><td>Xem log realtime — lệnh debug số 1</td></tr>
+    <tr><td><code>docker exec -it web sh</code></td><td>Chui vào trong container đang chạy</td></tr>
+    <tr><td><code>docker build -t myapp:1.2.0 .</code></td><td>Build image từ Dockerfile, gắn tag</td></tr>
+    <tr><td><code>docker tag myapp:1.2.0 registry.example.com/myapp:1.2.0</code></td><td>Gắn tag theo registry đích</td></tr>
+    <tr><td><code>docker push registry.example.com/myapp:1.2.0</code></td><td>Đẩy lên registry</td></tr>
+    <tr><td><code>docker inspect web</code> · <code>docker stats</code></td><td>Xem cấu hình chi tiết / mức dùng tài nguyên</td></tr>
+    <tr><td><code>docker system prune -a</code></td><td>Dọn image/container rác (cẩn thận: xóa hết image không dùng)</td></tr>
+  </table></div>
+
+  <h3 id="docker-sec">Bảo mật Docker — checklist</h3>
+  <ul class="checklist">
+    <li>Chạy bằng user thường (<code>USER app</code>), không bao giờ để mặc định root.</li>
+    <li>Base image nhỏ và có tag cụ thể: alpine, distroless; cập nhật định kỳ.</li>
+    <li>Không nhét secrets vào Dockerfile, ENV hay layer — dùng runtime secrets (Vault, K8s Secret, Secrets Manager).</li>
+    <li>Quét image trước khi push: <code>trivy image myapp:1.2.0</code> (chương 10).</li>
+    <li>Thêm <code>.dockerignore</code> (loại <code>.git</code>, <code>.env</code>, <code>node_modules</code>) — tránh lộ secrets vào build context.</li>
+    <li>Giới hạn tài nguyên: <code>--memory=512m --cpus=1</code>; filesystem chỉ đọc: <code>--read-only</code> khi có thể.</li>
+    <li>Không bao giờ mount <code>/var/run/docker.sock</code> vào container không tin cậy — tương đương trao quyền root cả host.</li>
+    <li>Ký image bằng Cosign và bật scan-on-push trên registry (Harbor/ECR đều hỗ trợ — sơ đồ của bạn ghi "ECR scan/sign" chính là bước này).</li>
+  </ul>
+</section>
+
+<!-- ================= 06 ================= -->
+<section class="chapter" id="kubernetes" data-chap="06 · Kubernetes">
+  <div class="chap-kicker"><span class="n">06</span>Kubernetes</div>
+  <h2>Kubernetes chuyên sâu</h2>
+  <p>Kubernetes (K8s) là hệ điều hành của cụm máy chủ: bạn <strong>khai báo trạng thái mong muốn</strong> bằng YAML ("tôi muốn 3 bản copy app này chạy, có load balancer phía trước"), K8s liên tục so sánh thực tế với mong muốn và tự sửa cho khớp. Nguyên lý "declarative + reconcile" này chính là nền của GitOps/Argo CD ở chương 09.</p>
+
+  <h3 id="k8s-arch">Kiến trúc cluster</h3>
+  <pre class="diagram"><code>┌────────────────── CONTROL PLANE (bộ não) ──────────────────┐
+│  kube-apiserver   cổng vào duy nhất — mọi lệnh kubectl,    │
+│                   mọi controller đều nói chuyện qua đây     │
+│  etcd             database lưu toàn bộ trạng thái cluster   │
+│  scheduler        quyết định Pod chạy trên node nào         │
+│  controller-mgr   vòng lặp reconcile: thực tế ≠ mong muốn   │
+│                   → hành động (tạo lại Pod chết, scale...)  │
+└─────────────────────────┬──────────────────────────────────┘
+                          │
+┌───────── WORKER NODES (cơ bắp — nơi app thật sự chạy) ─────┐
+│  kubelet         agent trên mỗi node, nhận lệnh tạo Pod     │
+│  containerd      runtime chạy container                     │
+│  kube-proxy      route traffic đến đúng Pod (Service)       │
+│  [ Pod ][ Pod ][ Pod ]  ...                                 │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+  <p>Trên AWS, <strong>EKS</strong> là Kubernetes mà AWS quản lý hộ phần control plane — bạn chỉ lo worker node và workload. Sơ đồ của bạn có tới 4+ cụm EKS (Cluster A xử lý app, Cluster B ký số, Hub cluster chạy Argo CD, các cluster non-prod) — tách cluster theo mức độ nhạy cảm là một biện pháp phân đoạn (segmentation) bảo mật.</p>
+
+  <h3 id="k8s-objects">Các object cốt lõi kèm YAML mẫu</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Object</th><th>Vai trò</th><th>Ghi nhớ</th></tr>
+    <tr><td><strong>Pod</strong></td><td>Đơn vị nhỏ nhất — 1+ container chung IP, chung vòng đời</td><td>Không tạo Pod trần; luôn qua Deployment</td></tr>
+    <tr><td><strong>Deployment</strong></td><td>Quản lý N bản copy Pod, rolling update, rollback</td><td>Object bạn dùng nhiều nhất</td></tr>
+    <tr><td><strong>Service</strong></td><td>IP/DNS ổn định đứng trước nhóm Pod (Pod chết đi sống lại, IP đổi liên tục)</td><td>3 loại: ClusterIP (nội bộ) / NodePort / LoadBalancer</td></tr>
+    <tr><td><strong>Ingress</strong></td><td>Route HTTP theo domain/path vào các Service</td><td>Cần cài Ingress Controller (nginx, ALB)</td></tr>
+    <tr><td><strong>ConfigMap / Secret</strong></td><td>Cấu hình / dữ liệu nhạy cảm tách khỏi image</td><td>Secret chỉ là base64 — phải mã hóa etcd hoặc dùng External Secrets/Vault</td></tr>
+    <tr><td><strong>Namespace</strong></td><td>Ngăn logic chia cluster (dev/staging/prod, theo team)</td><td>Gắn RBAC + quota + NetworkPolicy theo namespace</td></tr>
+    <tr><td><strong>StatefulSet</strong></td><td>App có trạng thái (database) — Pod có tên và ổ đĩa cố định</td><td></td></tr>
+    <tr><td><strong>DaemonSet</strong></td><td>Chạy đúng 1 Pod trên mỗi node</td><td>Dùng cho agent log, Falco, node-exporter</td></tr>
+    <tr><td><strong>Job / CronJob</strong></td><td>Task chạy xong thì thôi / theo lịch</td><td>Backup, quét định kỳ</td></tr>
+    <tr><td><strong>PV / PVC</strong></td><td>Ổ đĩa bền vững và yêu cầu cấp phát</td><td></td></tr>
+    <tr><td><strong>HPA</strong></td><td>Tự scale số Pod theo CPU/RAM/metric</td><td></td></tr>
+  </table></div>
+  <h4>Bộ ba Deployment + Service + Ingress (mẫu đầy đủ, có phần security context)</h4>
+  <pre><code><span class="k">apiVersion</span>: apps/v1
+<span class="k">kind</span>: Deployment
+<span class="k">metadata</span>:
+  name: myapp
+  namespace: prod
+<span class="k">spec</span>:
+  replicas: 3
+  selector: { matchLabels: { app: myapp } }
+  template:
+    metadata: { labels: { app: myapp } }
+    spec:
+      containers:
+      - name: myapp
+        image: registry.example.com/myapp:1.2.0   <span class="c"># tag cụ thể — Argo CD sẽ cập nhật dòng này</span>
+        ports: [{ containerPort: 3000 }]
+        resources:                                 <span class="c"># luôn khai — không khai là lỗi kinh điển</span>
+          requests: { cpu: 100m, memory: 128Mi }
+          limits:   { cpu: 500m, memory: 256Mi }
+        readinessProbe: { httpGet: { path: /health, port: 3000 } }
+        livenessProbe:  { httpGet: { path: /health, port: 3000 } }
+        securityContext:                           <span class="c"># phần DevSecOps quan tâm</span>
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities: { drop: ["ALL"] }
+---
+<span class="k">apiVersion</span>: v1
+<span class="k">kind</span>: Service
+<span class="k">metadata</span>: { name: myapp, namespace: prod }
+<span class="k">spec</span>:
+  selector: { app: myapp }
+  ports: [{ port: 80, targetPort: 3000 }]
+---
+<span class="k">apiVersion</span>: networking.k8s.io/v1
+<span class="k">kind</span>: Ingress
+<span class="k">metadata</span>: { name: myapp, namespace: prod }
+<span class="k">spec</span>:
+  rules:
+  - host: app.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend: { service: { name: myapp, port: { number: 80 } } }</code></pre>
+
+  <h3 id="k8s-cheat">kubectl cheatsheet</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Lệnh</th><th>Tác dụng</th></tr>
+    <tr><td><code>kubectl get pods -n prod -o wide</code></td><td>Liệt kê Pod kèm node/IP</td></tr>
+    <tr><td><code>kubectl describe pod myapp-xxx</code></td><td>Chi tiết + Events — nơi đầu tiên nhìn khi Pod lỗi</td></tr>
+    <tr><td><code>kubectl logs -f deploy/myapp</code></td><td>Log realtime của Deployment</td></tr>
+    <tr><td><code>kubectl exec -it myapp-xxx -- sh</code></td><td>Chui vào Pod</td></tr>
+    <tr><td><code>kubectl apply -f app.yaml</code></td><td>Áp manifest (declarative — dùng cái này)</td></tr>
+    <tr><td><code>kubectl rollout status deploy/myapp</code> · <code>rollout undo</code></td><td>Theo dõi / rollback bản deploy</td></tr>
+    <tr><td><code>kubectl get events --sort-by=.lastTimestamp</code></td><td>Chuyện gì vừa xảy ra trong cluster</td></tr>
+    <tr><td><code>kubectl top pods</code> · <code>kubectl top nodes</code></td><td>Mức dùng tài nguyên</td></tr>
+    <tr><td><code>kubectl port-forward svc/myapp 8080:80</code></td><td>Mở đường tạm từ máy mình vào Service</td></tr>
+    <tr><td><code>kubectl auth can-i delete pods --as system:serviceaccount:ci:jenkins</code></td><td>Kiểm tra quyền RBAC — rất hay dùng khi audit</td></tr>
+  </table></div>
+  <p>Trình tự debug Pod lỗi kinh điển: <code>get pods</code> (trạng thái gì?) → <code>describe pod</code> (Events nói gì? ImagePullBackOff? OOMKilled?) → <code>logs</code> (app nói gì?) → <code>exec</code> (vào trong xem tận mắt).</p>
+
+  <h3 id="k8s-helm">Helm — đóng gói ứng dụng K8s</h3>
+  <p>Helm là "trình quản lý gói" của K8s: gom cả chục file YAML thành một <strong>chart</strong> có template, thay giá trị theo môi trường bằng <code>values.yaml</code>. Argo CD deploy được thẳng Helm chart — combo phổ biến nhất hiện nay.</p>
+  <pre><code>helm create myapp                             <span class="c"># tạo skeleton chart</span>
+helm install myapp ./myapp -f values-prod.yaml -n prod
+helm upgrade myapp ./myapp -n prod            <span class="c"># nâng cấp</span>
+helm rollback myapp 1 -n prod                 <span class="c"># quay về revision 1</span>
+<span class="c"># Cài phần mềm có sẵn từ kho công cộng:</span>
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring --create-namespace</code></pre>
+
+  <h3 id="k8s-sec">Bảo mật Kubernetes</h3>
+  <h4>RBAC — ai được làm gì</h4>
+  <pre><code><span class="c"># Cho phép service account của CI chỉ được đọc Pod trong namespace ci</span>
+<span class="k">apiVersion</span>: rbac.authorization.k8s.io/v1
+<span class="k">kind</span>: Role
+<span class="k">metadata</span>: { name: pod-reader, namespace: ci }
+<span class="k">rules</span>:
+- apiGroups: [""]
+  resources: ["pods", "pods/log"]
+  verbs: ["get", "list", "watch"]
+---
+<span class="k">kind</span>: RoleBinding
+<span class="k">apiVersion</span>: rbac.authorization.k8s.io/v1
+<span class="k">metadata</span>: { name: jenkins-pod-reader, namespace: ci }
+<span class="k">subjects</span>: [{ kind: ServiceAccount, name: jenkins, namespace: ci }]
+<span class="k">roleRef</span>: { kind: Role, name: pod-reader, apiGroup: rbac.authorization.k8s.io }</code></pre>
+  <h4>NetworkPolicy — firewall giữa các Pod</h4>
+  <pre><code><span class="c"># Mặc định K8s cho MỌI Pod nói chuyện với nhau. Policy này chỉ cho</span>
+<span class="c"># Pod gắn nhãn app=web gọi vào database — đúng tinh thần Zero Trust.</span>
+<span class="k">apiVersion</span>: networking.k8s.io/v1
+<span class="k">kind</span>: NetworkPolicy
+<span class="k">metadata</span>: { name: db-allow-web-only, namespace: prod }
+<span class="k">spec</span>:
+  podSelector: { matchLabels: { app: db } }
+  policyTypes: [Ingress]
+  ingress:
+  - from: [{ podSelector: { matchLabels: { app: web } } }]
+    ports: [{ port: 5432 }]</code></pre>
+  <ul class="checklist">
+    <li><strong>Pod Security Standards</strong>: gắn nhãn namespace <code>pod-security.kubernetes.io/enforce=restricted</code> để chặn Pod chạy root/privileged.</li>
+    <li><strong>RBAC least privilege</strong>: không ai (kể cả CI) dùng cluster-admin; kiểm tra bằng <code>kubectl auth can-i</code>.</li>
+    <li><strong>NetworkPolicy default-deny</strong> rồi mở dần từng luồng cần thiết.</li>
+    <li><strong>Secrets</strong>: bật mã hóa etcd; production dùng External Secrets Operator + Vault/Secrets Manager (sơ đồ của bạn ghi "Secrets Manager + CSI" — chính là cách này).</li>
+    <li><strong>Trên EKS</strong>: IRSA (IAM Roles for Service Accounts) để Pod nhận quyền AWS tối thiểu, không dùng key cứng — sơ đồ bạn có ghi "IRSA least privilege".</li>
+    <li><strong>Admission control</strong>: Kyverno/OPA Gatekeeper chặn manifest vi phạm ngay lúc apply (chương 10).</li>
+    <li><strong>Runtime</strong>: Falco/GuardDuty phát hiện hành vi bất thường trong container (chương 14).</li>
+  </ul>
+</section>
+
+<!-- ================= 07 ================= -->
+<section class="chapter" id="cicd-jenkins" data-chap="07 · Jenkins">
+  <div class="chap-kicker"><span class="n">07</span>CI/CD</div>
+  <h2>CI/CD &amp; Jenkins</h2>
+
+  <h3 id="pipeline-la-gi">Pipeline là gì — giải phẫu</h3>
+  <p><strong>Pipeline</strong> (đường ống) là một <em>chuỗi bước tự động</em>: mỗi lần bạn đẩy code lên Git, hệ thống chạy lần lượt các bước từ đầu đến cuối mà không cần ai làm thủ công. Hình dung như một <strong>dây chuyền sản xuất</strong> — nguyên liệu (source code) đi vào một đầu, qua từng trạm (build → test → quét bảo mật → đóng gói → triển khai), ra đầu kia là sản phẩm chạy được trên môi trường thật. Nếu một trạm báo lỗi, cả dây chuyền dừng: không cho hàng lỗi đi tiếp.</p>
+  <p>Đừng nhầm "pipeline" với "công cụ": Jenkins, GitLab CI, GitHub Actions chỉ là <em>động cơ</em> chạy pipeline. Bản thân pipeline là một file khai báo nằm ngay trong repo (<code>Jenkinsfile</code>, <code>.gitlab-ci.yml</code>, <code>.github/workflows/*.yml</code>) — gọi là <strong>Pipeline as Code</strong>: pipeline được version và review y như code thường, ai sửa quy trình build/deploy đều để lại dấu vết.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Thành phần</th><th>Là gì</th><th>Ví dụ</th></tr>
+    <tr><td><strong>Trigger</strong> (kích hoạt)</td><td>Sự kiện làm pipeline chạy</td><td><code>git push</code>, mở Merge Request, chạy theo lịch (cron)</td></tr>
+    <tr><td><strong>Stage</strong> (pha)</td><td>Nhóm bước cùng mục đích, chạy theo thứ tự</td><td>build → test → scan → deploy</td></tr>
+    <tr><td><strong>Job / Step</strong></td><td>Việc cụ thể trong một stage; các job cùng stage có thể chạy song song</td><td>chạy unit test, chạy Trivy</td></tr>
+    <tr><td><strong>Runner / Agent</strong></td><td>Máy (thường là container) thực sự chạy job</td><td>GitLab Runner, Jenkins agent</td></tr>
+    <tr><td><strong>Artifact</strong></td><td>File sinh ra được giữ lại / chuyển sang stage sau</td><td>file build, báo cáo quét (SARIF), SBOM</td></tr>
+    <tr><td><strong>Gate</strong> (cổng chặn)</td><td>Điều kiện: không đạt thì dừng cả pipeline</td><td>có CVE Critical → fail; hoặc chờ người duyệt</td></tr>
+  </table></div>
+  <pre class="diagram"><code>push code ─▶ [Trigger] ─▶ ┌ Build ┐ ─▶ ┌ Test ┐ ─▶ ┌───── Scan ─────┐ ─▶ ┌─ Deploy ─┐
+                         │npm ci │    │ unit │    │ SAST·SCA·image │    │ qua GitOps│
+                         └───────┘    └──────┘    └───────┬────────┘    └──────────┘
+                                                  Gate: CVE Critical? ──▶ FAIL, dừng ống</code></pre>
+  <p>DevSecOps thực chất chỉ là <strong>chèn thêm các trạm bảo mật</strong> (quét secret, SAST, SCA, quét image, DAST) vào giữa dây chuyền này, kèm <em>gate</em> để chặn hàng lỗi — đúng tinh thần shift-left ở chương 02. Toàn bộ chương 07–09 là ba mảnh của một pipeline: Jenkins/GitLab lo phần CI (build–test–scan), Argo CD lo phần CD (deploy).</p>
+
+  <h3 id="jenkins-arch">Kiến trúc Jenkins và cài đặt lab</h3>
+  <p>Jenkins gồm <strong>controller</strong> (giao diện web, lập lịch, giữ cấu hình) và các <strong>agent</strong> (máy thợ thực sự chạy build — có thể là container, VM, hoặc Pod trên K8s). Nguyên tắc: <em>không build trên controller</em>; controller bị chiếm là mất cả hệ thống CI.</p>
+  <pre><code><span class="c"># Chạy Jenkins LTS bằng Docker để học (trong WSL2)</span>
+docker network create jenkins
+docker run -d --name jenkins --network jenkins \
+  -p 8080:8080 -p 50000:50000 \
+  -v jenkins_home:/var/jenkins_home \
+  jenkins/jenkins:lts-jdk17
+<span class="c"># Lấy mật khẩu admin lần đầu:</span>
+docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
+<span class="c"># Mở http://localhost:8080 → cài suggested plugins</span></code></pre>
+  <p>Khái niệm phải nắm: <strong>Pipeline as Code</strong> (pipeline định nghĩa trong file <code>Jenkinsfile</code> nằm cùng repo với code — review được, version được); <strong>webhook</strong> (GitHub/GitLab gọi Jenkins khi có push); <strong>Credentials store</strong> (nơi duy nhất được chứa token/password — tuyệt đối không hardcode trong Jenkinsfile); <strong>Shared Library</strong> (viết step dùng chung cho mọi team — cách các công ty chuẩn hóa security stage bắt buộc).</p>
+
+  <h3 id="jenkinsfile">Jenkinsfile DevSecOps hoàn chỉnh (khung sườn để học và tái dùng)</h3>
+  <pre><code><span class="k">pipeline</span> {
+  agent any
+  environment {
+    IMAGE    = "registry.example.com/myapp"
+    TAG      = "${env.GIT_COMMIT.take(8)}"
+    REGISTRY = credentials('registry-cred')      <span class="c">// lấy từ Credentials store</span>
+  }
+  options { timestamps() }
+
+  stages {
+    stage('Checkout')        { steps { checkout scm } }
+
+    stage('Secrets scan')    { steps {                <span class="c">// chặn API key/password lộ trong code</span>
+      sh 'gitleaks detect --source . --report-format sarif --report-path gitleaks.sarif'
+    } }
+
+    stage('Build + Unit test') { steps {
+      sh 'npm ci &amp;&amp; npm test'
+    } }
+
+    stage('SAST') { steps {                           <span class="c">// quét lỗ hổng trong source</span>
+      withSonarQubeEnv('sonar') { sh 'sonar-scanner -Dsonar.projectKey=myapp' }
+    } }
+    stage('Quality Gate') { steps {                   <span class="c">// SonarQube fail → pipeline dừng</span>
+      timeout(time: 5, unit: 'MINUTES') { waitForQualityGate abortPipeline: true }
+    } }
+
+    stage('SCA - dependencies') { steps {             <span class="c">// thư viện có CVE Critical → dừng</span>
+      sh 'trivy fs --scanners vuln --severity HIGH,CRITICAL --exit-code 1 .'
+    } }
+
+    stage('Docker build') { steps {
+      sh 'docker build -t $IMAGE:$TAG .'
+    } }
+
+    stage('Image scan') { steps {                     <span class="c">// image có CVE Critical → không được push</span>
+      sh 'trivy image --severity CRITICAL --exit-code 1 $IMAGE:$TAG'
+    } }
+
+    stage('Push + Sign') { steps {
+      sh '''
+        echo $REGISTRY_PSW | docker login registry.example.com -u $REGISTRY_USR --password-stdin
+        docker push $IMAGE:$TAG
+        cosign sign --yes $IMAGE:$TAG              <span class="c"># ký image — chống supply chain attack</span>
+        syft $IMAGE:$TAG -o cyclonedx-json > sbom.json   <span class="c"># tạo SBOM</span>
+      '''
+    } }
+
+    stage('Update GitOps repo') { steps {             <span class="c">// KHÔNG deploy trực tiếp — chỉ sửa Git,</span>
+      sh '''                                          <span class="c"># Argo CD sẽ tự thấy và deploy (chương 09)</span>
+        git clone https://git.example.com/platform/gitops-config.git
+        cd gitops-config
+        sed -i "s|image: $IMAGE:.*|image: $IMAGE:$TAG|" apps/myapp/dev/deployment.yaml
+        git commit -am "deploy: myapp $TAG to dev" &amp;&amp; git push
+      '''
+    } }
+  }
+  post {
+    always  { archiveArtifacts artifacts: '*.sarif, sbom.json', allowEmptyArchive: true }
+    failure { echo 'Gửi cảnh báo Slack/Teams tại đây' }
+  }
+}</code></pre>
+  <div class="callout"><span class="label">Điểm mấu chốt</span><p>Chú ý stage cuối: Jenkins <strong>không</strong> chạy <code>kubectl apply</code>. Nó chỉ commit tag image mới vào GitOps repo, còn việc deploy là của Argo CD (mô hình <strong>pull-based</strong>). Nhờ vậy Jenkins không cần quyền truy cập cluster production — thu hẹp đáng kể bề mặt tấn công. Đây chính xác là mũi tên "Update image tag (commit)" trong sơ đồ Diagram V2 của bạn.</p></div>
+
+  <h3 id="cicd-compare">So sánh Jenkins · GitHub Actions · GitLab CI</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Tiêu chí</th><th>Jenkins</th><th>GitHub Actions</th><th>GitLab CI</th></tr>
+    <tr><td>Mô hình</td><td>Tự host, plugin khổng lồ (~1.800)</td><td>SaaS gắn liền GitHub</td><td>Gắn liền GitLab, tự host được</td></tr>
+    <tr><td>Định nghĩa pipeline</td><td>Jenkinsfile (Groovy)</td><td>YAML trong <code>.github/workflows/</code></td><td><code>.gitlab-ci.yml</code></td></tr>
+    <tr><td>Độ khó học</td><td>Cao nhất</td><td>Thấp nhất</td><td>Trung bình</td></tr>
+    <tr><td>Điểm mạnh</td><td>Tùy biến vô hạn, phổ biến ở doanh nghiệp lớn/VN</td><td>Marketplace action có sẵn, setup 5 phút</td><td>DevSecOps tích hợp sẵn (SAST/DAST built-in bản Ultimate)</td></tr>
+    <tr><td>Chiến lược học</td><td><strong>Học chính</strong> — JD yêu cầu</td><td>Học phụ để hiểu bản chất nhanh → chương 08</td><td><strong>Học thứ hai</strong> — rất phổ biến ở doanh nghiệp VN → chương 08</td></tr>
+  </table></div>
+</section>
+
+<!-- ================= 08 ================= -->
+<section class="chapter" id="gitlab" data-chap="08 · GitLab & Actions">
+  <div class="chap-kicker"><span class="n">08</span>GitLab CI/CD</div>
+  <h2>GitLab CI/CD — và GitHub Actions an toàn</h2>
+  <p>Jenkins (chương 07) phổ biến ở doanh nghiệp lớn, nhưng <strong>GitLab</strong> là nền tảng bạn gần như chắc chắn sẽ gặp: rất nhiều ngân hàng, công ty chứng khoán và tổ chức tài chính Việt Nam chạy GitLab <em>self-host</em> trong mạng nội bộ vì yêu cầu code không được rời khỏi hạ tầng công ty. Khác Jenkins (chỉ làm CI), GitLab là <strong>nền tảng DevSecOps trọn gói</strong>: Git repo, review code, CI/CD, container registry, quét bảo mật — tất cả trong một sản phẩm. Biết viết <code>.gitlab-ci.yml</code> là điểm cộng rõ rệt khi phỏng vấn.</p>
+
+  <h3 id="gitlab-platform">Bản đồ khái niệm — GitLab so với những gì bạn đã học</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Khái niệm GitLab</th><th>Tương đương đã học</th><th>Ghi chú</th></tr>
+    <tr><td><strong>Merge Request (MR)</strong></td><td>Pull Request của GitHub</td><td>Nơi gắn review bắt buộc; pipeline phải xanh mới cho merge</td></tr>
+    <tr><td><strong>.gitlab-ci.yml</strong></td><td>Jenkinsfile</td><td>YAML thay vì Groovy — dễ đọc hơn hẳn; nằm ở gốc repo</td></tr>
+    <tr><td><strong>Runner</strong></td><td>Jenkins agent</td><td>Tiến trình nhận job về chạy; đăng ký với server bằng token</td></tr>
+    <tr><td><strong>Environment</strong></td><td>—</td><td>Khai báo đích deploy (staging/production): có lịch sử deploy, rollback, approval</td></tr>
+    <tr><td><strong>Protected branch / tag</strong></td><td>Branch protection rule</td><td>Cấm push thẳng, bắt buộc MR + approval; biến "protected" chỉ cấp cho nhánh này</td></tr>
+    <tr><td><strong>Container Registry</strong></td><td>ECR / Harbor</td><td>Mỗi project có sẵn registry riêng — <code>registry.gitlab.com/nhom/app</code></td></tr>
+    <tr><td><strong>include / template</strong></td><td>Jenkins Shared Library</td><td>Cách chuẩn hóa security stage bắt buộc cho mọi team</td></tr>
+  </table></div>
+  <p><strong>Phiên bản:</strong> dùng gitlab.com (SaaS — free tier đủ để học, có hạn mức phút CI hằng tháng) hoặc self-host GitLab CE/EE. Về quét bảo mật tích hợp sẵn: mọi tier chạy được <strong>SAST</strong>, <strong>Secret Detection</strong>, <strong>Container Scanning</strong> (kết quả xuất ra file report trong artifacts); bản <strong>Ultimate</strong> mới có Dependency Scanning, DAST, License Compliance cùng dashboard lỗ hổng và widget hiển thị ngay trong MR. Đừng để tier cản trở: pipeline mẫu bên dưới dùng toàn tool mã nguồn mở (Gitleaks, Semgrep, Trivy, Cosign) nên chạy được trên mọi phiên bản.</p>
+
+  <h3 id="gitlab-runner">Runner — "máy thợ" của GitLab</h3>
+  <p>GitLab server chỉ điều phối; job thật sự chạy trên <strong>runner</strong>. Runner đăng ký với server, nhận job theo <strong>tag</strong>, và thực thi job bằng một <strong>executor</strong>:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Executor</th><th>Job chạy ở đâu</th><th>Dùng khi</th></tr>
+    <tr><td><code>shell</code></td><td>Thẳng trên máy cài runner</td><td>Đơn giản nhất nhưng job "làm bẩn" được máy — tránh dùng cho code không tin cậy</td></tr>
+    <tr><td><code>docker</code></td><td>Mỗi job một container mới, sạch</td><td>Phổ biến nhất — image khai báo ngay trong job</td></tr>
+    <tr><td><code>kubernetes</code></td><td>Mỗi job một Pod trên cluster</td><td>Quy mô lớn, tự scale — tương đương Jenkins agent trên K8s</td></tr>
+  </table></div>
+  <pre><code><span class="c"># Lab: chạy GitLab Runner bằng Docker và đăng ký với gitlab.com</span>
+docker run -d --name gitlab-runner --restart always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v gitlab-runner-config:/etc/gitlab-runner \
+  gitlab/gitlab-runner:latest
+
+docker exec -it gitlab-runner gitlab-runner register \
+  --url https://gitlab.com --token glrt-xxxx \
+  --executor docker --docker-image alpine:latest
+<span class="c"># token lấy ở Settings → CI/CD → Runners của project</span></code></pre>
+  <div class="callout danger"><span class="label">Bảo mật runner — hay bị hỏi</span><p>Runner là nơi code lạ được thực thi ngay cạnh secrets — tâm điểm của nhiều rủi ro trong OWASP CI/CD Top 10 (chương 11). Ba nguyên tắc: <strong>(1)</strong> tách runner riêng cho project nhạy cảm, đừng để mọi repo dùng chung shared runner có quyền cao; <strong>(2)</strong> hạn chế chế độ <code>privileged</code> (thường bật để chạy docker-in-docker) — job chiếm được cả máy host; dùng kaniko/buildah build image thì không cần privileged; <strong>(3)</strong> không cho pipeline của fork hay MR từ người lạ chạy trên runner đang giữ secrets.</p></div>
+
+  <h3 id="gitlab-yml">Giải phẫu .gitlab-ci.yml</h3>
+  <pre><code><span class="c"># Pipeline tối giản: 2 stage; job test chạy trong container node</span>
+<span class="k">stages</span>: [test, build]
+
+<span class="k">unit_test</span>:
+  stage: test
+  image: node:22-alpine
+  cache: { key: "$CI_COMMIT_REF_SLUG", paths: [node_modules/] }
+  script:
+    - npm ci
+    - npm test
+
+<span class="k">build_app</span>:
+  stage: build
+  needs: [unit_test]              <span class="c"># DAG: chỉ chờ đúng job mình cần, không chờ cả stage</span>
+  script: [npm run build]
+  artifacts: { paths: [dist/], expire_in: 1 week }
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'   <span class="c"># chỉ chạy trên nhánh main</span></code></pre>
+  <div class="tablewrap"><table>
+    <tr><th>Từ khóa</th><th>Ý nghĩa</th><th>Tương đương Jenkins</th></tr>
+    <tr><td><code>stages</code> / <code>stage</code></td><td>Thứ tự các pha; job cùng stage chạy song song</td><td><code>stages { stage() }</code></td></tr>
+    <tr><td><code>image</code> / <code>services</code></td><td>Container chạy job / container phụ đi kèm (Postgres cho test, dind)</td><td>agent docker</td></tr>
+    <tr><td><code>script</code> · <code>before_script</code></td><td>Các lệnh shell của job</td><td><code>steps { sh }</code></td></tr>
+    <tr><td><code>rules</code></td><td>Điều kiện chạy job theo nhánh/MR/lịch/biến — thay <code>only/except</code> cũ</td><td><code>when { }</code></td></tr>
+    <tr><td><code>artifacts</code></td><td>File giữ lại sau job (report, build output) — truyền sang stage sau</td><td><code>archiveArtifacts</code></td></tr>
+    <tr><td><code>cache</code></td><td>Thư mục dùng lại giữa các lần chạy (node_modules…) cho nhanh</td><td>—</td></tr>
+    <tr><td><code>needs</code></td><td>Vẽ DAG — job chạy ngay khi job nó cần xong, pipeline nhanh hơn hẳn</td><td>—</td></tr>
+    <tr><td><code>environment</code></td><td>Gắn job vào môi trường deploy — bật approval, theo dõi lịch sử</td><td>input/approval</td></tr>
+    <tr><td><code>when: manual</code></td><td>Job đứng chờ người bấm nút — approval gate thủ công</td><td><code>input</code></td></tr>
+    <tr><td><code>extends</code> + job ẩn <code>.ten-job</code></td><td>Kế thừa cấu hình dùng chung, tránh lặp YAML</td><td>—</td></tr>
+    <tr><td><code>include</code></td><td>Nhúng YAML từ file/repo/template khác — chuẩn hóa toàn công ty</td><td>Shared Library</td></tr>
+  </table></div>
+
+  <h3 id="gitlab-devsecops">.gitlab-ci.yml DevSecOps hoàn chỉnh — song sinh với Jenkinsfile chương 07</h3>
+  <p>Cùng triết lý các lớp bảo vệ của chương 10, viết bằng GitLab CI. Chú ý hai điểm: image build bằng <strong>kaniko</strong> (không cần Docker daemon → runner không cần privileged); và image được push với tag commit <em>trước</em> khi quét — không sao, vì quality gate thật nằm ở chỗ: <strong>scan fail thì job cập nhật GitOps repo không bao giờ chạy</strong>, image đó không bao giờ được deploy.</p>
+  <pre><code><span class="k">stages</span>: [secrets, test, sast, build, scan, sign, deploy]
+
+<span class="k">variables</span>:
+  IMAGE: $CI_REGISTRY_IMAGE            <span class="c"># registry.gitlab.com/nhom/myapp — có sẵn mỗi project</span>
+  TAG:   $CI_COMMIT_SHORT_SHA
+
+<span class="k">gitleaks</span>:                              <span class="c"># lớp 1: quét secrets lộ trong code</span>
+  stage: secrets
+  image: { name: zricethezav/gitleaks:latest, entrypoint: [""] }
+  script: [gitleaks detect --source . -v]
+
+<span class="k">unit_test</span>:
+  stage: test
+  image: node:22-alpine
+  script:
+    - npm ci
+    - npm test
+
+<span class="k">semgrep_sast</span>:                          <span class="c"># lớp 2: SAST</span>
+  stage: sast
+  image: semgrep/semgrep
+  script: [semgrep scan --config auto --error .]
+
+<span class="k">trivy_sca</span>:                             <span class="c"># lớp 3: quét dependency</span>
+  stage: sast
+  image: { name: aquasec/trivy:latest, entrypoint: [""] }
+  script: [trivy fs --scanners vuln --severity HIGH,CRITICAL --exit-code 1 .]
+
+<span class="k">build_push_image</span>:                      <span class="c"># kaniko: build + push không cần Docker daemon</span>
+  stage: build
+  image: { name: gcr.io/kaniko-project/executor:debug, entrypoint: [""] }
+  script:
+    - /kaniko/executor --context . --dockerfile Dockerfile --destination $IMAGE:$TAG
+  <span class="c"># kaniko tự đăng nhập registry của GitLab bằng CI_JOB_TOKEN</span>
+
+<span class="k">trivy_image</span>:                           <span class="c"># lớp 4: quét image — gate chặn CRITICAL</span>
+  stage: scan
+  image: { name: aquasec/trivy:latest, entrypoint: [""] }
+  script: [trivy image --severity CRITICAL --exit-code 1 $IMAGE:$TAG]
+
+<span class="k">cosign_sign</span>:                           <span class="c"># lớp 9: ký image kiểu keyless</span>
+  stage: sign
+  image: { name: ghcr.io/sigstore/cosign/cosign:latest, entrypoint: [""] }
+  id_tokens:
+    SIGSTORE_ID_TOKEN: { aud: sigstore }   <span class="c"># ký bằng danh tính OIDC của pipeline — không cần giữ key</span>
+  script: [cosign sign --yes $IMAGE:$TAG]
+
+<span class="k">update_gitops</span>:                         <span class="c"># giống Jenkins: chỉ sửa Git, Argo CD lo deploy (chương 09)</span>
+  stage: deploy
+  rules: [{ if: '$CI_COMMIT_BRANCH == "main"' }]
+  script:
+    - git clone https://oauth2:${GITOPS_TOKEN}@git.example.com/platform/gitops-config.git
+    - cd gitops-config
+    - sed -i "s|image:.*|image: $IMAGE:$TAG|" apps/myapp/dev/deployment.yaml
+    - git commit -am "deploy myapp $TAG to dev" &amp;&amp; git push
+
+<span class="k">promote_prod</span>:                          <span class="c"># approval gate: người bấm nút mới chạy</span>
+  stage: deploy
+  when: manual
+  environment: production
+  script: [./scripts/open-mr-dev-to-prod.sh]</code></pre>
+  <p>Muốn dùng scanner <em>chính chủ</em> của GitLab thay vì tự viết job? Chỉ cần <code>include</code> template — GitLab tự thêm các job tương ứng vào pipeline:</p>
+  <pre><code><span class="k">include</span>:
+  - template: Jobs/SAST.gitlab-ci.yml               <span class="c"># mọi tier</span>
+  - template: Jobs/Secret-Detection.gitlab-ci.yml   <span class="c"># mọi tier</span>
+  - template: Jobs/Container-Scanning.gitlab-ci.yml <span class="c"># mọi tier</span>
+  - template: DAST.gitlab-ci.yml                    <span class="c"># Ultimate</span></code></pre>
+
+  <h3 id="gitlab-secrets">Biến CI, secrets và bảo vệ nhánh — phần DevSecOps quan tâm nhất</h3>
+  <ul class="checklist">
+    <li><strong>CI/CD Variables</strong> (Settings → CI/CD → Variables): bật <strong>Masked</strong> để giá trị bị che thành <code>[MASKED]</code> trong log, và <strong>Protected</strong> để biến chỉ cấp cho pipeline chạy trên protected branch/tag — MR từ nhánh lạ không bao giờ nhìn thấy secret prod. Đây là phòng thủ trực tiếp cho PPE (chương 11).</li>
+    <li><strong>Protected branch</strong> cho <code>main</code>/<code>prod</code>: cấm push thẳng, bắt buộc MR + ít nhất 1 approval; thêm <strong>CODEOWNERS</strong> để mọi thay đổi vào <code>.gitlab-ci.yml</code> phải có platform team duyệt.</li>
+    <li><strong>Environment + protected environment</strong>: gắn <code>environment: production</code> cho job deploy — chỉ nhóm được chỉ định mới bấm chạy được, và GitLab lưu lịch sử ai deploy gì lúc nào.</li>
+    <li><strong>OIDC (<code>id_tokens</code>) thay token tĩnh</strong>: pipeline xin JWT ngắn hạn rồi đổi lấy quyền AWS/Vault — không còn access key nằm chết trong Variables. Cùng triết lý với IRSA bạn gặp ở chương 06.</li>
+    <li>Biến có sẵn hay dùng: <code>$CI_COMMIT_SHORT_SHA</code>, <code>$CI_REGISTRY_IMAGE</code>, <code>$CI_PIPELINE_SOURCE</code> (push? MR? schedule?), <code>$CI_JOB_TOKEN</code> (token ngắn hạn tự có của mỗi job).</li>
+  </ul>
+
+  <h3 id="github-actions">GitHub Actions — viết cho đúng và cho an toàn</h3>
+  <p>GitHub Actions là CI dễ học nhất và là thứ bạn nên áp <em>ngay</em> vào các repo portfolio GitHub của mình. Workflow là file YAML trong <code>.github/workflows/</code>, kích hoạt theo sự kiện (<code>on:</code>), chạy trên runner của GitHub hoặc self-hosted:</p>
+  <pre><code><span class="k">name</span>: ci
+<span class="k">on</span>:
+  push: { branches: [main] }
+  pull_request:
+
+<span class="k">permissions</span>: { contents: read }   <span class="c"># hạ GITHUB_TOKEN xuống chỉ-đọc — cấp thêm theo từng job</span>
+
+<span class="k">jobs</span>:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@&lt;commit-sha-đầy-đủ&gt;      <span class="c"># v4 — pin theo SHA, không dùng tag trôi</span>
+      - uses: gitleaks/gitleaks-action@&lt;commit-sha&gt;
+        env: { GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} }
+      - run: npm ci &amp;&amp; npm test
+      - run: docker build -t myapp:${{ github.sha }} .
+      - uses: aquasecurity/trivy-action@&lt;commit-sha&gt;     <span class="c"># quét image, fail nếu CRITICAL</span>
+        with: { image-ref: "myapp:${{ github.sha }}", severity: CRITICAL, exit-code: 1 }</code></pre>
+  <h4>Checklist an toàn GitHub Actions</h4>
+  <ul class="checklist">
+    <li><code>permissions: contents: read</code> ngay đầu workflow — GITHUB_TOKEN mặc định có thể ghi vào repo; tự hạ xuống chỉ-đọc rồi cấp thêm đúng job cần (vd job release cần <code>contents: write</code>).</li>
+    <li><strong>Pin action theo commit SHA</strong>, không theo tag: tag <code>@v4</code> có thể bị chủ action (hoặc kẻ chiếm account của họ) trỏ sang code độc — chính là vụ <code>tj-actions/changed-files</code> tháng 3/2025 khiến hàng nghìn repo bị rút secrets từ log build.</li>
+    <li>Cảnh giác <code>pull_request_target</code>: trigger này chạy với secrets của repo — nếu lại checkout code từ PR của người lạ thì họ chiếm được secrets (lỗ hổng P-PPE kinh điển, chương 11). Dùng <code>pull_request</code> thường trừ khi hiểu rõ mình đang làm gì.</li>
+    <li><strong>OIDC sang cloud</strong>: dùng <code>aws-actions/configure-aws-credentials</code> với <code>role-to-assume</code> — xóa hẳn AWS access key tĩnh khỏi repo secrets.</li>
+    <li>Secrets deploy đặt trong <strong>Environment</strong> có required reviewers — lên prod phải có người duyệt.</li>
+    <li>Bật <strong>Dependabot</strong> cho cả <code>github-actions</code> lẫn npm/pip; thêm <code>dependency-review-action</code> để PR kéo vào thư viện có CVE là bị chặn.</li>
+  </ul>
+  <div class="callout"><span class="label">Chiến lược học</span><p>Jenkins vẫn là "học chính" vì JD nêu đích danh. Nhưng ba hệ CI cùng chung khái niệm (stage, artifact, secrets, gate) — học GitLab CI mất chưa tới một tuần khi đã hiểu Jenkins, và đổi lại là lợi thế thật khi ứng tuyển vào ngân hàng/chứng khoán dùng GitLab nội bộ. GitHub Actions thì áp thẳng vào portfolio của bạn: repo có badge CI xanh + pipeline bảo mật là bằng chứng sống động hơn mọi lời mô tả.</p></div>
+
+  <h3 id="golden-path">"Golden Path": template hoá secure code cho cả tổ chức</h3>
+  <p>Bạn hỏi rất đúng: ngoài pipeline, DevSecOps còn có khái niệm <strong>template secure code</strong> — dựng sẵn "khuôn" đã <em>an toàn theo mặc định (secure by default)</em> để dev cứ thế điền code vào, không phải tự nhớ bật từng biện pháp bảo mật. Trong ngành gọi mô hình này là <strong>Golden Path</strong> (hay <em>Paved Road</em> — "con đường đã lát sẵn"): platform/security team làm sẵn con đường an toàn <em>và</em> dễ đi nhất, để lựa chọn an toàn cũng chính là lựa chọn tiện nhất — dev không phải chọn giữa "nhanh" và "an toàn".</p>
+  <p>Có <strong>3 tầng template</strong> chồng lên nhau:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Tầng</th><th>Template gì</th><th>Gồm sẵn những gì</th><th>Công cụ</th></tr>
+    <tr><td>1 · Khuôn dự án</td><td>Bộ khung một repo mới</td><td>Cấu trúc thư mục, Dockerfile chuẩn (multi-stage, <code>USER</code> non-root), <code>.gitignore</code>/<code>.dockerignore</code>, pre-commit hook (gitleaks), README, <code>.gitlab-ci.yml</code> mẫu</td><td>cookiecutter, Backstage Software Templates, project template của GitHub/GitLab</td></tr>
+    <tr><td>2 · Khuôn pipeline</td><td>Các security stage bắt buộc</td><td>secret scan, SAST, SCA, image scan, sign — viết một lần, mọi repo <code>include</code>/gọi lại</td><td>GitLab <code>include:</code> template, Jenkins Shared Library, GitHub reusable workflow</td></tr>
+    <tr><td>3 · Khuôn chính sách</td><td>Luật không được vi phạm</td><td>Cấm image chạy root, bắt buộc resource limit, chặn cấu hình sai trong IaC/K8s</td><td>OPA/Gatekeeper, Kyverno, Checkov custom policy</td></tr>
+  </table></div>
+  <pre><code><span class="c"># TẦNG 2 — .github/workflows/secure-ci.yml: security team viết MỘT lần, cho repo khác gọi lại</span>
+<span class="k">on</span>: { workflow_call: {} }                 <span class="c"># khai báo đây là workflow tái sử dụng</span>
+<span class="k">jobs</span>:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@&lt;sha&gt;
+      - uses: gitleaks/gitleaks-action@&lt;sha&gt;   <span class="c"># secret scan</span>
+      - uses: aquasecurity/trivy-action@&lt;sha&gt;  <span class="c"># SCA + image scan</span>
+
+<span class="c"># repo con chỉ cần GỌI một dòng là nhận đủ "giáp" bảo mật — không thể quên bật</span>
+<span class="k">jobs</span>:
+  call-secure:
+    uses: my-org/.github/.github/workflows/secure-ci.yml@main</code></pre>
+  <div class="callout"><span class="label">Vì sao đây là bảo mật, không chỉ tiện</span><p>Khi security nằm trong template dùng chung: (1) dev <strong>không thể quên</strong> bật quét — nó có sẵn; (2) muốn nâng cấp (thêm scanner, siết ngưỡng gate) chỉ sửa <em>một chỗ</em>, cả trăm repo tự cập nhật ở lần chạy sau; (3) chuẩn hoá giúp audit dễ — "mọi repo đều đi qua đúng bộ gate này". Đây là cách áp shift-left ở quy mô tổ chức thay vì đi nhắc từng người.</p></div>
+
+  <h3 id="kiro">Kiro &amp; "spec-driven development" — chuẩn hoá secure code từ trong IDE</h3>
+  <p><strong>Kiro</strong> là IDE tích hợp AI (agentic IDE) của AWS, theo triết lý <strong>spec-driven development</strong>: thay vì chat tuỳ hứng để AI sinh code lung tung, bạn <em>viết đặc tả trước</em> (spec) rồi AI mới hiện thực theo — buộc suy nghĩ thiết kế trước khi gõ, tức là <em>shift-left ngay tại bàn phím</em>. Điểm liên quan tới câu hỏi của bạn: Kiro chuẩn hoá code bằng một cấu trúc thư mục <code>.kiro/</code> nằm trong repo, cả team dùng chung (giống ý tưởng "template" nhưng ở tầng IDE + AI).</p>
+  <div class="tablewrap"><table>
+    <tr><th>Thành phần</th><th>Thư mục / cơ chế</th><th>Vai trò</th><th>Dùng cho bảo mật thế nào</th></tr>
+    <tr><td><strong>Steering docs</strong></td><td><code>.kiro/steering/*.md</code></td><td>Ngữ cảnh &amp; quy ước cố định mà AI luôn tuân theo. Ba file nền: <code>product.md</code> (vì sao), <code>tech.md</code> (stack), <code>structure.md</code> (cấu trúc &amp; quy ước đặt tên)</td><td>Thêm <code>security.md</code>: "luôn dùng parameterized query, không hardcode secret, validate mọi input, hash mật khẩu bằng argon2" → AI sinh code tuân thủ sẵn</td></tr>
+    <tr><td><strong>Specs</strong></td><td><code>.kiro/specs/&lt;feature&gt;/</code></td><td>Quy trình 3 pha cho mỗi tính năng: <code>requirements.md</code> → <code>design.md</code> → <code>tasks.md</code></td><td>Ở pha <code>design</code> thêm mục "abuse case / threat" → ép threat modeling nhẹ cho từng feature (chương 11)</td></tr>
+    <tr><td><strong>Agent Hooks</strong></td><td>lưu ở cấp repo</td><td>Tự động chạy khi có sự kiện IDE: lưu file, tạo file, commit</td><td>Hook "khi lưu file → chạy gitleaks + lint bảo mật"; "khi tạo API endpoint → nhắc thêm kiểm tra phân quyền" — quét <em>trước</em> cả khi kịp push</td></tr>
+    <tr><td><strong>MCP</strong></td><td>cấu hình MCP server</td><td>Nối AI tới công cụ/dữ liệu ngoài</td><td>Cho AI tra CVE của thư viện đang định thêm, hoặc đọc chuẩn bảo mật nội bộ, trước khi viết code</td></tr>
+  </table></div>
+  <p>Nói ngắn: <em>steering</em> = luật lệ, <em>specs</em> = bản thiết kế từng việc, <em>hooks</em> = tự động hoá. Ba thứ này biến máy dev thành <strong>trạm shift-left đầu tiên</strong> — bảo mật được áp <em>trước</em> khi code rời khỏi máy. (GitHub Copilot, Cursor cũng có cơ chế tương tự qua file <code>.cursorrules</code>/instructions; Kiro chỉ là ví dụ có cấu trúc rõ ràng nhất.)</p>
+
+  <h4>Luồng end-to-end: từ Kiro tới sản phẩm chạy thật (đẩy → quét → release)</h4>
+  <p>Ghép Kiro (giai đoạn viết code) với pipeline (chương 07–09) thành một mạch liền — đây chính là "cách đẩy, quét, release" bạn hỏi:</p>
+  <pre class="diagram"><code>① VIẾT (máy dev)         ② ĐẨY              ③ QUÉT (CI)              ④ ĐÓNG GÓI          ⑤ RELEASE (CD)
+┌──────────────────┐                   ┌────────────────────┐   ┌────────────────┐   ┌──────────────────┐
+│ Kiro IDE         │ git push          │ pipeline chạy:     │   │ build image    │   │ Argo CD kéo về   │
+│ • steering (luật)│ ──▶ Merge Request │ secret→SAST→SCA→   │──▶│ sign (Cosign)  │──▶│ deploy (GitOps)  │
+│ • spec (thiết kế)│ ──▶ webhook       │ image scan         │   │ SBOM (Syft)    │   │ tag release, prod│
+│ • hook (quét sớm)│                   │ Gate: Critical→FAIL│   │ push registry  │   │ approval ở prod  │
+└──────────────────┘                   └────────────────────┘   └────────────────┘   └──────────────────┘
+    shift-left nhất ◀──────────────────────────────────────────────────────────────▶ gần production nhất</code></pre>
+  <ul>
+    <li><strong>Cách đẩy (push):</strong> code từ IDE → <code>git commit</code> → <code>git push</code> lên nhánh feature → mở Merge/Pull Request. Push hoặc MR là <em>trigger</em> làm pipeline chạy (qua webhook). Nhánh <code>main</code>/<code>prod</code> phải là <em>protected branch</em>: cấm push thẳng, bắt buộc qua MR + review (chương 08, phần secrets &amp; protected branch).</li>
+    <li><strong>Quét code:</strong> pipeline chạy tuần tự các trạm bảo mật đã học — Gitleaks (secret) → Semgrep/SonarQube (SAST) → Trivy (SCA + image) → ZAP (DAST ở môi trường test). Mỗi trạm là một <em>gate</em>; gặp lỗ hổng nghiêm trọng thì fail, MR không được merge (chương 10).</li>
+    <li><strong>Release sản phẩm:</strong> qua hết gate → build image → <em>ký</em> bằng Cosign và tạo <em>SBOM</em> bằng Syft (chống tấn công chuỗi cung ứng, chương 11) → push lên registry → cập nhật GitOps repo → Argo CD tự deploy (chương 09). Lên production thường thêm <em>approval gate</em> (người bấm nút) và gắn <strong>tag phiên bản</strong> (vd <code>v1.4.0</code>) để biết chính xác cái gì đang chạy và <code>git revert</code> được khi cần.</li>
+  </ul>
+  <div class="callout warn"><span class="label">Cạm bẫy của AI IDE — nhớ để nói khi phỏng vấn</span><p>Kiro/Copilot tăng tốc rất mạnh nhưng <strong>AI có thể sinh ra code dính lỗ hổng hoặc vô tình chèn secret</strong>. Vì thế steering/template chỉ là lớp phòng thủ <em>đầu</em>; tuyệt đối không được bỏ các gate quét ở pipeline. Nguyên tắc bất biến: mọi thứ AI sinh ra vẫn phải đi qua đúng bộ SAST/SCA/secret scan và được con người review — "tin nhưng phải kiểm chứng".</p></div>
+</section>
+
+<!-- ================= 09 ================= -->
+<section class="chapter" id="gitops-argocd" data-chap="09 · Argo CD">
+  <div class="chap-kicker"><span class="n">09</span>GitOps</div>
+  <h2>GitOps &amp; Argo CD</h2>
+
+  <h3 id="argocd-arch">Triết lý GitOps và kiến trúc Argo CD</h3>
+  <p><strong>GitOps</strong> = trạng thái mong muốn của hệ thống (toàn bộ manifest/Helm chart) nằm trong một Git repo; một controller trong cluster liên tục so sánh <em>Git nói gì</em> với <em>cluster đang thế nào</em> và tự đồng bộ. Hệ quả quan trọng với bảo mật:</p>
+  <ul>
+    <li><strong>Audit trail miễn phí</strong>: mọi thay đổi production là một commit — ai, lúc nào, thay đổi gì, được ai approve (PR review). Đối với hệ thống tài chính như trong sơ đồ của bạn, đây là yêu cầu tuân thủ, không phải tùy chọn.</li>
+    <li><strong>Pull-based</strong>: Argo CD trong cluster tự kéo về, CI không cần cầm credentials của cluster.</li>
+    <li><strong>Self-heal + chống drift</strong>: ai đó sửa tay trên cluster (kể cả kẻ tấn công) → Argo CD phát hiện lệch so với Git và đưa về trạng thái đúng.</li>
+    <li><strong>Rollback = git revert</strong>: quay về trạng thái cũ trong vài giây.</li>
+  </ul>
+  <pre><code><span class="c"># Cài Argo CD lên cluster lab (minikube/kind)</span>
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+<span class="c"># Lấy mật khẩu admin và mở UI:</span>
+argocd admin initial-password -n argocd
+kubectl port-forward svc/argocd-server -n argocd 8443:443
+<span class="c"># → mở https://localhost:8443 , user: admin</span></code></pre>
+  <p>Các thành phần chính: <strong>repo-server</strong> (kéo Git, render Helm/Kustomize ra manifest), <strong>application-controller</strong> (so sánh và sync), <strong>api-server/UI</strong> (giao diện, RBAC, SSO). Trạng thái ứng dụng đọc theo 2 trục: <strong>Sync status</strong> (Synced / OutOfSync — Git và cluster có khớp không) và <strong>Health</strong> (Healthy / Progressing / Degraded — app có sống không).</p>
+
+  <h3 id="argocd-app">Application — đơn vị làm việc của Argo CD</h3>
+  <pre><code><span class="k">apiVersion</span>: argoproj.io/v1alpha1
+<span class="k">kind</span>: Application
+<span class="k">metadata</span>:
+  name: myapp-prod
+  namespace: argocd
+<span class="k">spec</span>:
+  project: default
+  source:
+    repoURL: https://git.example.com/platform/gitops-config.git
+    targetRevision: prod              <span class="c"># nhánh prod — khớp mô hình dev/test/stg/prod của bạn</span>
+    path: apps/myapp/prod
+    helm: { valueFiles: [values-prod.yaml] }
+  destination:
+    server: https://kubernetes.default.svc   <span class="c"># hoặc URL cluster spoke khác</span>
+    namespace: prod
+  syncPolicy:
+    automated:
+      prune: true                     <span class="c"># xóa resource không còn trong Git</span>
+      selfHeal: true                  <span class="c"># sửa tay trên cluster → tự đưa về theo Git</span>
+    syncOptions: [CreateNamespace=true]</code></pre>
+  <div class="tablewrap"><table>
+    <tr><th>Chính sách</th><th>Hành vi</th><th>Dùng cho</th></tr>
+    <tr><td>Manual sync</td><td>Người bấm nút Sync mới deploy</td><td>Production cần kiểm soát chặt</td></tr>
+    <tr><td><code>automated</code></td><td>Git đổi là deploy ngay</td><td>Dev/Test/Staging — sơ đồ bạn ghi "Auto sync"</td></tr>
+    <tr><td><code>automated + selfHeal</code></td><td>Thêm chống sửa tay trên cluster</td><td>Mọi môi trường nên bật</td></tr>
+    <tr><td>Sync windows</td><td>Chỉ cho phép sync trong khung giờ định trước</td><td>Prod — sơ đồ bạn ghi "Sync windows (controlled)"</td></tr>
+  </table></div>
+  <pre><code><span class="c"># CLI hay dùng</span>
+argocd app list
+argocd app sync myapp-prod                <span class="c"># sync thủ công</span>
+argocd app diff myapp-prod                <span class="c"># Git vs cluster đang lệch gì</span>
+argocd app history myapp-prod             <span class="c"># lịch sử deploy</span>
+argocd app rollback myapp-prod 5          <span class="c"># quay về revision 5</span></code></pre>
+
+  <h3 id="argocd-hub">App-of-Apps và Hub-and-Spoke — mô hình trong sơ đồ của bạn</h3>
+  <ul>
+    <li><strong>App-of-Apps</strong>: một Application "mẹ" trỏ vào thư mục chứa các Application "con" → thêm app mới = thêm 1 file YAML vào Git, không đụng tay vào Argo CD.</li>
+    <li><strong>Hub-and-Spoke</strong>: <em>một</em> Argo CD đặt ở cluster trung tâm (Hub) quản lý deploy cho <em>nhiều</em> cluster đích (Spoke). Trong Diagram V2: Hub EKS nằm ở <strong>Shared Services Account</strong>, các Spoke là cluster Non-Prod (auto sync) và Prod (sync windows) — Hub được cấp quyền vào Spoke qua <strong>EKS Access Entry</strong> với least privilege, đúng ghi chú trong sơ đồ. Ưu điểm: một mặt phẳng điều khiển duy nhất, một nơi audit; đổi lại Hub trở thành tài sản trọng yếu phải bảo vệ kỹ (RBAC, SSO, network isolation).</li>
+    <li>Tra thêm: <strong>ApplicationSet</strong> — generator tự sinh Application cho N cluster/N môi trường từ một template.</li>
+  </ul>
+</section>
+
+<!-- ================= 10 ================= -->
+<section class="chapter" id="bao-mat-pipeline" data-chap="10 · Security">
+  <div class="chap-kicker"><span class="n">10</span>DevSecOps tooling</div>
+  <h2>Bảo mật pipeline — 10 lớp và tool cụ thể</h2>
+
+  <h3 id="sec-layers">Bản đồ 10 lớp bảo vệ</h3>
+  <div class="tablewrap"><table>
+    <tr><th>#</th><th>Lớp</th><th>Trả lời câu hỏi</th><th>Tool ưu tiên (miễn phí)</th><th>Chạy ở đâu</th></tr>
+    <tr><td>1</td><td>Secrets scanning</td><td>Có API key/password lộ trong code không?</td><td><strong>Gitleaks</strong>, TruffleHog</td><td>Pre-commit + CI</td></tr>
+    <tr><td>2</td><td>SAST</td><td>Source code có lỗ hổng (SQLi, XSS...) không?</td><td><strong>SonarQube</strong>, <strong>Semgrep</strong>, CodeQL</td><td>CI</td></tr>
+    <tr><td>3</td><td>SCA</td><td>Thư viện đang dùng có CVE không?</td><td><strong>Trivy</strong>, OWASP Dependency-Check, Snyk</td><td>CI</td></tr>
+    <tr><td>4</td><td>Container scan</td><td>Image có gói hệ điều hành/lib dính CVE không?</td><td><strong>Trivy</strong>, Grype</td><td>CI + registry (scan-on-push)</td></tr>
+    <tr><td>5</td><td>IaC scan</td><td>Terraform/K8s manifest có cấu hình nguy hiểm không?</td><td><strong>Checkov</strong>, Trivy config, tfsec</td><td>CI + PR review</td></tr>
+    <tr><td>6</td><td>DAST</td><td>App đang chạy có khai thác được không?</td><td><strong>OWASP ZAP</strong>, Burp</td><td>Sau deploy staging</td></tr>
+    <tr><td>7</td><td>Secrets management</td><td>Secrets được cấp phát và xoay vòng thế nào?</td><td><strong>Vault</strong>, AWS Secrets Manager + CSI</td><td>Runtime</td></tr>
+    <tr><td>8</td><td>Policy as Code</td><td>Deploy có vi phạm chính sách không (root, no-limits...)?</td><td><strong>Kyverno</strong>, OPA Gatekeeper</td><td>K8s admission</td></tr>
+    <tr><td>9</td><td>Supply chain</td><td>Image này có đúng do pipeline của mình build không?</td><td><strong>Cosign</strong> (ký), <strong>Syft</strong> (SBOM)</td><td>CI + admission verify</td></tr>
+    <tr><td>10</td><td>Runtime security</td><td>Container đang có hành vi bất thường không?</td><td><strong>Falco</strong>, GuardDuty EKS</td><td>Production 24/7</td></tr>
+  </table></div>
+  <div class="callout warn"><span class="label">Học tool nào trước</span><p><strong>Trivy</strong> đáng học đầu tiên: một binary duy nhất quét được dependency (lớp 3), image (lớp 4), IaC (lớp 5) và cả secrets (lớp 1). Sau đó SonarQube (lớp 2) vì gần như mọi doanh nghiệp VN đều dùng. Các lớp còn lại thêm dần theo giai đoạn 3 của lộ trình.</p></div>
+
+  <h3 id="sec-commands">Lệnh mẫu từng tool — chạy được ngay</h3>
+  <pre><code><span class="c"># 1. Gitleaks — quét secrets trong repo và toàn bộ lịch sử Git</span>
+gitleaks detect --source . -v
+
+<span class="c"># 2a. Semgrep — SAST nhanh, rule cộng đồng</span>
+semgrep scan --config auto .
+<span class="c"># 2b. SonarQube — dựng server bằng Docker rồi quét</span>
+docker run -d --name sonar -p 9000:9000 sonarqube:lts-community
+sonar-scanner -Dsonar.projectKey=myapp -Dsonar.host.url=http://localhost:9000 -Dsonar.token=$TOKEN
+
+<span class="c"># 3. Trivy — quét dependency + secrets trong thư mục dự án</span>
+trivy fs --scanners vuln,secret,misconfig .
+
+<span class="c"># 4. Trivy — quét container image, fail nếu có CRITICAL (dùng làm quality gate)</span>
+trivy image --severity HIGH,CRITICAL --exit-code 1 myapp:1.2.0
+
+<span class="c"># 5. Checkov — quét Terraform/K8s manifest</span>
+checkov -d ./terraform
+checkov -d ./k8s-manifests --framework kubernetes
+
+<span class="c"># 6. OWASP ZAP — DAST baseline scan lên URL staging</span>
+docker run --rm -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t https://staging.example.com -r zap-report.html
+
+<span class="c"># 9a. Cosign — ký và xác minh image</span>
+cosign generate-key-pair
+cosign sign --key cosign.key registry.example.com/myapp:1.2.0
+cosign verify --key cosign.pub registry.example.com/myapp:1.2.0
+<span class="c"># 9b. Syft — tạo SBOM (bảng kê thành phần phần mềm)</span>
+syft myapp:1.2.0 -o cyclonedx-json > sbom.json</code></pre>
+
+  <h4>Kyverno — policy chặn image không ký / Pod chạy root (lớp 8)</h4>
+  <pre><code><span class="k">apiVersion</span>: kyverno.io/v1
+<span class="k">kind</span>: ClusterPolicy
+<span class="k">metadata</span>: { name: require-run-as-nonroot }
+<span class="k">spec</span>:
+  validationFailureAction: Enforce    <span class="c"># vi phạm là CHẶN, không chỉ cảnh báo</span>
+  rules:
+  - name: check-runAsNonRoot
+    match: { any: [{ resources: { kinds: [Pod] } }] }
+    validate:
+      message: "Pod phải chạy bằng non-root user."
+      pattern:
+        spec: { securityContext: { runAsNonRoot: true } }</code></pre>
+
+  <h3 id="sec-vault">Vault — quản lý secrets tập trung (lớp 7)</h3>
+  <p>Vấn đề Vault giải quyết: secrets rải rác trong file <code>.env</code>, biến CI, K8s Secret (chỉ là base64) — không ai biết có bao nhiêu, ai đang dùng, bao giờ xoay vòng. Vault tập trung tất cả về một chỗ, cấp phát <strong>động</strong> (mỗi lần xin là một credential mới, có hạn dùng), ghi log mọi lần truy cập.</p>
+  <pre><code>docker run -d --name vault -p 8200:8200 --cap-add=IPC_LOCK hashicorp/vault   <span class="c"># dev mode để học</span>
+export VAULT_ADDR=http://localhost:8200
+vault kv put secret/myapp db_password=S3cret!          <span class="c"># ghi secret</span>
+vault kv get -field=db_password secret/myapp            <span class="c"># đọc secret</span></code></pre>
+  <p>Trên K8s, dùng <strong>External Secrets Operator</strong> hoặc <strong>Secrets Store CSI Driver</strong> để Pod tự lấy secret từ Vault/AWS Secrets Manager lúc khởi động — manifest trong Git không bao giờ chứa secret thật. Sơ đồ của bạn ghi "Secrets Manager + CSI" là mô hình này với dịch vụ của AWS.</p>
+
+  <div class="callout"><span class="label">Còn chính pipeline thì sao?</span><p>10 lớp ở trên quét <em>sản phẩm</em> đi qua pipeline. Nhưng bản thân pipeline (Jenkins, GitLab, runner, registry) cũng là mục tiêu tấn công hàng đầu — chiếm được pipeline là chiếm được quyền deploy bất cứ thứ gì. Toàn bộ <strong>chương 11</strong> dành riêng cho chủ đề này: OWASP Top 10 CI/CD Security Risks, các vụ tấn công thật và chuỗi phòng thủ SLSA · SBOM · Sigstore.</p></div>
+</section>
+
+<!-- ================= 11 ================= -->
+<section class="chapter" id="owasp" data-chap="11 · OWASP">
+  <div class="chap-kicker"><span class="n">11</span>OWASP</div>
+  <h2>OWASP Top 10 — ứng dụng web · CI/CD · chuỗi cung ứng</h2>
+  <p>OWASP có nhiều danh sách Top 10; làm DevSecOps cần thuộc hai: <strong>Top 10 web</strong> (lỗ hổng trong app mà pipeline của bạn build) và <strong>Top 10 CI/CD Security Risks</strong> (lỗ hổng trong chính pipeline). Chương này đi hết cả hai, khép lại bằng chuỗi cung ứng (SLSA · SBOM · Sigstore) — mảnh ghép nối chúng với nhau.</p>
+
+  <h3 id="owasp-web">OWASP Top 10 web — và lớp pipeline nào bắt được</h3>
+  <p>Bảng theo bản 2021 (chuẩn tài liệu và phỏng vấn hiện hành). Cột cuối trả lời đúng câu hỏi DevSecOps quan tâm: <em>rủi ro này tự động hóa phát hiện được ở lớp nào của chương 10?</em></p>
+  <div class="tablewrap"><table>
+    <tr><th>Mã</th><th>Rủi ro</th><th>Ví dụ điển hình</th><th>Pipeline bắt bằng</th></tr>
+    <tr><td>A01</td><td>Broken Access Control</td><td>Sửa <code>?order_id=123</code> thành <code>124</code> là xem được đơn của người khác (IDOR)</td><td>Khó tự động nhất — review code, test thủ công; DAST bắt được một phần</td></tr>
+    <tr><td>A02</td><td>Cryptographic Failures</td><td>Password lưu MD5; TLS đời cũ; secret hardcode trong code</td><td>SAST + Gitleaks + quét cấu hình</td></tr>
+    <tr><td>A03</td><td>Injection</td><td>SQL injection, XSS, command injection</td><td>SAST (Semgrep/SonarQube) + DAST (ZAP)</td></tr>
+    <tr><td>A04</td><td>Insecure Design</td><td>API nhập OTP không giới hạn số lần thử</td><td>Threat modeling ở khâu thiết kế — tool không cứu được thiết kế sai</td></tr>
+    <tr><td>A05</td><td>Security Misconfiguration</td><td>Debug bật trên prod; S3 bucket public; thiếu security header</td><td>Checkov/Trivy config (IaC scan) + DAST</td></tr>
+    <tr><td>A06</td><td>Vulnerable &amp; Outdated Components</td><td>Log4Shell — thư viện ghi log dính RCE</td><td>SCA (Trivy fs) + container scan — lớp tự động hóa tốt nhất</td></tr>
+    <tr><td>A07</td><td>Identification &amp; Authentication Failures</td><td>Không khóa account sau N lần sai; session không hết hạn</td><td>DAST + review</td></tr>
+    <tr><td>A08</td><td>Software &amp; Data Integrity Failures</td><td>Auto-update không verify chữ ký; pipeline tin artifact không kiểm chứng</td><td>Cosign verify + SLSA — chính là phần cuối chương này</td></tr>
+    <tr><td>A09</td><td>Security Logging &amp; Monitoring Failures</td><td>Bị brute-force suốt 3 ngày không ai hay biết</td><td>Chương 14 — Falco, SIEM, alerting</td></tr>
+    <tr><td>A10</td><td>SSRF</td><td>App bị lừa tự gọi <code>http://169.254.169.254</code> để lộ IAM credentials</td><td>SAST + DAST; egress filtering — đúng vai trò Egress VPC trong sơ đồ của bạn</td></tr>
+  </table></div>
+  <div class="callout"><span class="label">Bản cập nhật 2025</span><p>OWASP đã công bố bản làm mới Top 10 (2025): Broken Access Control vẫn giữ vị trí số 1, và điểm đáng chú ý nhất là nhóm rủi ro <strong>chuỗi cung ứng phần mềm</strong> được tách riêng, nhảy thẳng vào nhóm đầu danh sách. Nói cách khác: những gì bạn học ở chương này — bảo vệ pipeline và chuỗi cung ứng — giờ được xếp quan trọng ngang với bảo vệ code.</p></div>
+
+  <h3 id="owasp-cicd">OWASP Top 10 CI/CD Security Risks — tấn công vào chính pipeline</h3>
+  <p>Danh sách này (mã <strong>CICD-SEC-1…10</strong>) trả lời câu hỏi của kẻ tấn công: việc gì phải khai thác app cho vất vả — trong khi <em>chiếm pipeline là có quyền deploy bất cứ thứ gì lên production</em>? Với nền infosec sẵn có, bạn hãy đọc bảng này như đọc ATT&amp;CK cho CI/CD:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Mã</th><th>Rủi ro</th><th>Kịch bản tấn công</th><th>Phòng thủ chính</th></tr>
+    <tr><td><strong>SEC-1</strong></td><td>Insufficient Flow Control Mechanisms</td><td>Chiếm account 1 dev là đủ: push thẳng main → pipeline tự deploy prod, không ai duyệt</td><td>Protected branch, MR/PR bắt buộc review, approval gate, sync window (Argo CD)</td></tr>
+    <tr><td><strong>SEC-2</strong></td><td>Inadequate Identity &amp; Access Management</td><td>Account bot quyền admin không MFA; nhân viên nghỉ việc mà token vẫn sống</td><td>SSO + MFA bắt buộc, review quyền định kỳ, token có hạn dùng</td></tr>
+    <tr><td><strong>SEC-3</strong></td><td>Dependency Chain Abuse</td><td>Dependency confusion: đăng gói trùng tên gói nội bộ lên registry public — CI ưu tiên kéo bản public về chạy</td><td>Lockfile + pin version, registry nội bộ có scope riêng, SCA</td></tr>
+    <tr><td><strong>SEC-4</strong></td><td>Poisoned Pipeline Execution (PPE)</td><td>Sửa <code>Jenkinsfile</code>/<code>.gitlab-ci.yml</code> chèn lệnh độc — pipeline tự chạy nó với toàn bộ secrets trong tay</td><td>Xem mục PPE ngay dưới</td></tr>
+    <tr><td><strong>SEC-5</strong></td><td>Insufficient Pipeline-Based Access Controls</td><td>Job build của repo tầm thường nhất cũng nhìn thấy secrets prod, vì mọi job chạy chung một runner</td><td>Runner riêng theo mức nhạy cảm, secrets scoped theo job/environment, runner dùng xong hủy (ephemeral)</td></tr>
+    <tr><td><strong>SEC-6</strong></td><td>Insufficient Credential Hygiene</td><td>Token in ra log build; secret nằm trong ENV của mọi job; không ai xoay vòng</td><td>Masked variable, Vault secrets động, OIDC thay token tĩnh, Gitleaks quét liên tục</td></tr>
+    <tr><td><strong>SEC-7</strong></td><td>Insecure System Configuration</td><td>Jenkins bản cũ 2 năm mở thẳng ra Internet, tài khoản admin/admin</td><td>Patch đều, đặt sau VPN/Zero Trust, harden theo CIS, MFA cho admin</td></tr>
+    <tr><td><strong>SEC-8</strong></td><td>Ungoverned Usage of 3rd Party Services</td><td>Plugin Jenkins / action Marketplace / OAuth app được cấp quyền ghi repo mà không ai kiểm soát</td><td>Whitelist plugin/action, pin theo SHA, review quyền OAuth app định kỳ</td></tr>
+    <tr><td><strong>SEC-9</strong></td><td>Improper Artifact Integrity Validation</td><td>Image bị tráo giữa lúc build xong và lúc deploy — cluster kéo về chạy không hỏi</td><td>Cosign sign + verify ở admission (Kyverno), SLSA provenance, deploy theo digest thay vì tag</td></tr>
+    <tr><td><strong>SEC-10</strong></td><td>Insufficient Logging &amp; Visibility</td><td>Pipeline bị lạm dụng hàng tháng trời, không log nào ghi lại để điều tra</td><td>Đẩy audit log của Jenkins/GitLab/registry về SIEM, cảnh báo hành vi bất thường</td></tr>
+  </table></div>
+
+  <h4 id="ppe">PPE — rủi ro số 1 cần hiểu sâu, có 3 biến thể</h4>
+  <div class="tablewrap"><table>
+    <tr><th>Biến thể</th><th>Cách tấn công</th><th>Chặn bằng</th></tr>
+    <tr><td><strong>D-PPE</strong> (direct)</td><td>Sửa trực tiếp file pipeline trong repo mình có quyền push — pipeline chạy ngay lệnh của kẻ tấn công</td><td>CODEOWNERS: sửa file pipeline phải có platform team duyệt; protected variables không cấp cho nhánh thường</td></tr>
+    <tr><td><strong>I-PPE</strong> (indirect)</td><td>Không đụng file pipeline — sửa thứ pipeline <em>gọi</em>: Makefile, script test, <code>postinstall</code> trong package.json</td><td>Review cả script build chứ không riêng code app; hạn chế secrets ở stage cài dependency</td></tr>
+    <tr><td><strong>P-PPE</strong> (public)</td><td>Gửi PR từ fork vào repo public — nếu workflow chạy PR đó với secrets (vd <code>pull_request_target</code> + checkout code fork) là mất sạch</td><td>Không cấp secrets cho pipeline từ fork; bắt buộc approve trước khi chạy CI cho contributor lạ</td></tr>
+  </table></div>
+
+  <h4 id="su-co">4 sự cố thật để kể trong phỏng vấn</h4>
+  <div class="tablewrap"><table>
+    <tr><th>Vụ</th><th>Chuyện gì xảy ra</th><th>Bài học (map về CICD-SEC)</th></tr>
+    <tr><td><strong>SolarWinds</strong> (2020)</td><td>Kẻ tấn công vào được build server, cấy mã độc vào bản build chính thức — được ký số hợp lệ — ~18.000 tổ chức cài về</td><td>Bảo vệ hạ tầng build (SEC-7); build cách ly + provenance (SLSA L3)</td></tr>
+    <tr><td><strong>Codecov</strong> (2021)</td><td>Script bash uploader bị sửa một dòng — âm thầm gửi toàn bộ biến môi trường CI (đầy secrets) của hàng nghìn công ty ra ngoài</td><td>Đừng <code>curl | bash</code> tool bên thứ ba trong CI; pin checksum (SEC-8, SEC-6)</td></tr>
+    <tr><td><strong>Dependency confusion</strong> (2021)</td><td>Nhà nghiên cứu Alex Birsan đăng gói trùng tên gói nội bộ của Apple, Microsoft, PayPal… lên npm/PyPI — CI của họ tự kéo về thực thi</td><td>SEC-3: lockfile, scoped registry, chặn kéo gói nội bộ từ nguồn public</td></tr>
+    <tr><td><strong>xz-utils</strong> (2024)</td><td>"Maintainer" giả kiên nhẫn xây lòng tin suốt ~2 năm rồi cấy backdoor vào thư viện nén — suýt vào OpenSSH của mọi bản Linux lớn</td><td>Chuỗi cung ứng mã nguồn mở là mục tiêu dài hơi; SBOM giúp trả lời "mình có dính không" trong vài phút</td></tr>
+  </table></div>
+
+  <h3 id="supply-chain">SLSA · SBOM · Sigstore — bộ ba phòng thủ chuỗi cung ứng</h3>
+  <h4>SLSA — thang đo độ tin cậy của quá trình build</h4>
+  <p>SLSA (đọc "salsa") là framework của cộng đồng do Google khởi xướng, chia độ tin cậy build thành 4 mức:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Mức</th><th>Yêu cầu</th><th>Chặn được gì</th></tr>
+    <tr><td><strong>L0</strong></td><td>Không có gì</td><td>—</td></tr>
+    <tr><td><strong>L1</strong></td><td>Build sinh <strong>provenance</strong>: hồ sơ "build từ source nào, bằng lệnh gì, lúc nào"</td><td>Nhầm lẫn, thiếu minh bạch nguồn gốc</td></tr>
+    <tr><td><strong>L2</strong></td><td>Build chạy trên nền tảng hosted, provenance được <strong>ký số</strong></td><td>Giả mạo provenance sau khi build</td></tr>
+    <tr><td><strong>L3</strong></td><td>Build <strong>cách ly</strong>: job không can thiệp được job khác, không chạm được khóa ký</td><td>Kịch bản kiểu SolarWinds — mức nên nhắm tới cho hệ thống tài chính</td></tr>
+  </table></div>
+  <h4>SBOM — bảng kê thành phần phần mềm</h4>
+  <p>Hai format chính: <strong>CycloneDX</strong> (của OWASP — gọn, phổ biến trong security tool) và <strong>SPDX</strong> (Linux Foundation — nặng về license). Sinh bằng <code>syft</code> hoặc <code>trivy image --format cyclonedx</code>. Giá trị thật đo bằng ngày Log4Shell nổ ra: đội có SBOM trả lời "chỗ nào đang chạy log4j 2.x?" trong vài phút; đội không có mất hàng tuần đi hỏi từng team.</p>
+  <h4>Sigstore — ký keyless và verify ở cổng cluster</h4>
+  <p>Điểm yếu của ký truyền thống: private key phải cất ở đâu đó — và chỗ đó trộm được (chính là cách SolarWinds có chữ ký hợp lệ). <strong>Cosign keyless</strong> ký bằng <em>danh tính OIDC của pipeline</em>: Fulcio cấp chứng chỉ ngắn hạn theo danh tính đó, mọi chữ ký ghi vào transparency log công khai Rekor — không còn key để mất. Mảnh cuối cùng là <strong>verify ở admission</strong>: cluster từ chối mọi image thiếu chữ ký hợp lệ:</p>
+  <pre><code><span class="c"># Kyverno: chỉ cho chạy image đã được pipeline ký</span>
+<span class="k">apiVersion</span>: kyverno.io/v1
+<span class="k">kind</span>: ClusterPolicy
+<span class="k">metadata</span>: { name: verify-image-signature }
+<span class="k">spec</span>:
+  validationFailureAction: Enforce
+  rules:
+  - name: require-signed-images
+    match: { any: [{ resources: { kinds: [Pod] } }] }
+    verifyImages:
+    - imageReferences: ["registry.example.com/*"]
+      attestors:
+      - entries:
+        - keys:
+            publicKeys: |-
+              -----BEGIN PUBLIC KEY-----
+              ...nội dung file cosign.pub...
+              -----END PUBLIC KEY-----</code></pre>
+  <p>Ghép tất cả thành chuỗi khép kín: <strong>build sinh provenance (SLSA) → sinh SBOM (Syft) → ký image (Cosign) → admission verify (Kyverno) → runtime giám sát (Falco)</strong>. Mỗi mắt xích chặn đúng một nhóm rủi ro CICD-SEC ở trên — khi phỏng vấn, vẽ được chuỗi này ra giấy là một điểm cộng rất lớn.</p>
+</section>
+
+<!-- ================= 12 ================= -->
+<section class="chapter" id="kien-truc" data-chap="12 · Kiến trúc">
+  <div class="chap-kicker"><span class="n">12</span>Kiến trúc hạ tầng</div>
+  <h2>Giải phẫu sơ đồ Multi-VPC của bạn (Diagram V2)</h2>
+  <p>Sơ đồ bạn có — <em>"Trading Platform Blueprint: Multi-Account / TGW Inspection / ATTT L4 / Zero Trust"</em> — là một thiết kế <strong>AWS Landing Zone</strong> chuẩn cho hệ thống tài chính. Chương này giải thích từng khối để bạn đọc sơ đồ của chính mình một cách trôi chảy, và chỉ ra cần học gì để hiểu sâu từng phần.</p>
+
+  <pre class="diagram"><code>            Users / Banks / Partners / Office (IPSec VPN) / Admin-SOC
+                                    │
+                 Cloudflare: CDN + WAF + Bot + DDoS (Edge Security)
+                 Cloudflare Access = Zero Trust cho admin
+                                    │
+┌───────────────── AWS Organization · ap-southeast-1 · 3 AZ ─────────────────┐
+│                                                                             │
+│  INGRESS ACCOUNT              INSPECTION ACCOUNT           EGRESS ACCOUNT   │
+│  Ingress VPC (DMZ)            Inspection VPC               Egress VPC       │
+│  10.0.0.0/16                  firewall inline —            NAT per AZ       │
+│  IGW · Public ALB             MỌI traffic đi qua           + DNS Resolver   │
+│        │                            ▲   │                        ▲          │
+│        └────►  TRANSIT GATEWAY HUB ─┴───┴────────────────────────┘          │
+│                (route table riêng từng domain:                              │
+│                 Ingress → Inspection → Workload)                            │
+│                            │                                                │
+│  PRODUCTION WORKLOAD ACCOUNT (DolphinEx)                                    │
+│  Workload VPC 10.10.0.0/16 · mỗi AZ có 5 lớp subnet:                        │
+│    LB │ App (EKS) │ Cache (ElastiCache) │ DB │ TGW-attach                   │
+│  EKS Cluster A: App Processing   ·   EKS Cluster B: Signing (Critical)      │
+│  PrivateLink ◄── mTLS ──► Core Trading Engine (Service VPC riêng)           │
+│                                                                             │
+│  SHARED SERVICES: VPC Endpoints (ECR,S3,KMS...) + Hub EKS chạy ARGO CD      │
+│  SECURITY: GuardDuty · Security Hub · SIEM/SOC     AUDIT: CloudTrail·Config │
+│  LOG ARCHIVE: S3 WORM             TOOLING/CI: Jenkins · CodePipeline · ECR  │
+└─────────────────────────────────────────────────────────────────────────────┘
+  Option A: AWS Local Zone Hà Nội (1 AZ)   ·   Option B: DX/VPN → CMC/Viettel</code></pre>
+
+  <h3 id="arch-accounts">Vì sao tách nhiều account, nhiều VPC?</h3>
+  <p>Nguyên tắc là <strong>blast radius</strong> (bán kính sát thương): một account bị chiếm thì thiệt hại dừng ở account đó. IAM boundary giữa các account là hàng rào cứng nhất AWS có. Từng account trong sơ đồ:</p>
+  <div class="tablewrap"><table>
+    <tr><th>Account / VPC</th><th>Nhiệm vụ</th><th>Vì sao tách riêng</th></tr>
+    <tr><td><strong>Ingress (DMZ)</strong> 10.0.0.0/16</td><td>Cửa vào duy nhất: Internet Gateway + Public ALB, trải 3 AZ</td><td>Chỉ nơi này chạm Internet chiều vào; workload không bao giờ có public IP</td></tr>
+    <tr><td><strong>Inspection</strong></td><td>Firewall inline (AWS Network Firewall / IPS) — sơ đồ ghi rõ "mọi traffic đều đi qua đây"</td><td>Một điểm soi toàn bộ luồng đông-tây lẫn bắc-nam; đội security kiểm soát độc lập với đội app</td></tr>
+    <tr><td><strong>Egress</strong></td><td>NAT Gateway mỗi AZ + Route 53 Resolver — đường ra Internet duy nhất</td><td>Kiểm soát và lọc chiều đi ra (chống C2 callback, data exfiltration)</td></tr>
+    <tr><td><strong>Workload (DolphinEx)</strong> 10.10.0.0/16</td><td>App thật: EKS, ElastiCache, DB tự host — subnet phân tầng theo vai trò</td><td>Tầng DB không có route ra Internet; giữa các tầng chặn bằng Security Group</td></tr>
+    <tr><td><strong>Shared Services</strong></td><td>VPC Endpoint tập trung (ECR, S3, STS, KMS, Secrets) + <strong>Hub EKS chạy Argo CD</strong></td><td>Gọi dịch vụ AWS qua PrivateLink nội bộ, không ra Internet; một hub deploy cho mọi cluster</td></tr>
+    <tr><td><strong>Security</strong></td><td>GuardDuty, Security Hub, Detective, Macie, SIEM/SOC</td><td>Kẻ tấn công chiếm workload cũng không tắt được camera giám sát</td></tr>
+    <tr><td><strong>Audit + Log Archive</strong></td><td>CloudTrail org-trail, Config, Audit Manager; S3 <strong>WORM</strong> (ghi một lần, không sửa xóa được)</td><td>Log bất biến phục vụ điều tra và tuân thủ — kể cả admin cũng không xóa được</td></tr>
+    <tr><td><strong>Tooling / CI</strong></td><td>Jenkins, CodePipeline/CodeBuild, ECR, S3 artifacts (mã hóa KMS)</td><td>Pipeline bị chiếm không đồng nghĩa production bị chiếm — nhớ lại mô hình pull-based chương 09</td></tr>
+  </table></div>
+  <p><strong>Transit Gateway (TGW)</strong> là "router trung tâm" nối tất cả VPC. Điểm hay nằm ở <em>route table riêng cho từng domain</em>: TGW ép luồng Ingress → phải qua Inspection → mới tới Workload; hai workload muốn nói chuyện với nhau cũng bị ép vòng qua Inspection. Không VPC nào nối thẳng VPC nào — đó là cách hiện thực hóa Zero Trust ở tầng mạng.</p>
+  <p><strong>PrivateLink</strong> (các khối Interface Endpoint / Endpoint Service trong sơ đồ): kết nối một chiều, chỉ expose đúng một service — DolphinEx gọi Core Trading Engine qua PrivateLink + mTLS thay vì nối cả hai VPC với nhau. Nguyên tắc: cấp kết nối hẹp nhất đủ dùng.</p>
+  <div class="callout warn"><span class="label">ATTT cấp độ 4 &amp; data residency</span><p>"ATTT L4" trong tiêu đề sơ đồ là phân loại hệ thống thông tin cấp độ 4 theo Nghị định 85/2016/NĐ-CP — hệ thống quan trọng, yêu cầu giám sát, phân vùng, mã hóa và lưu log nghiêm ngặt (khớp với các khối Inspection, SIEM, WORM log). Option A (AWS Local Zone Hà Nội) và Option B (DX/VPN về CMC/Viettel) là hai phương án đặt dữ liệu tại Việt Nam để đáp ứng yêu cầu lưu trữ dữ liệu trong nước — lưu ý sơ đồ ghi đúng: Local Zone chỉ có 1 AZ vật lý, nên phải cân nhắc HA.</p></div>
+
+  <h3 id="arch-flow">Hai luồng cần thuộc lòng khi nhìn sơ đồ</h3>
+  <h4>Luồng traffic người dùng (bắc-nam)</h4>
+  <ol>
+    <li>User → <strong>Cloudflare</strong> (CDN, WAF chặn OWASP Top 10, chống DDoS/bot).</li>
+    <li>→ <strong>Public ALB</strong> trong Ingress VPC (điểm chạm Internet duy nhất).</li>
+    <li>→ <strong>TGW</strong> ép qua <strong>Inspection VPC</strong> (firewall soi sâu gói tin).</li>
+    <li>→ Workload VPC, vào tầng LB subnet → App subnet (Pod trên EKS).</li>
+    <li>App gọi Cache/DB ở tầng subnet sâu hơn; gọi Core Trading Engine qua PrivateLink + mTLS; đi Internet chiều ra phải vòng qua Egress VPC (NAT) và bị re-inspect.</li>
+    <li>Admin không SSH thẳng: vào qua <strong>Cloudflare Access</strong> (Zero Trust — xác thực danh tính từng request thay vì tin VPN).</li>
+  </ol>
+  <h4>Luồng CI/CD (dải dưới cùng của sơ đồ — khớp chương 07 + 09)</h4>
+  <ol>
+    <li>Dev push code → <strong>App Source Repo</strong> → trigger <strong>Jenkins/CodePipeline</strong>: build + unit test.</li>
+    <li><strong>SAST + SCA</strong> (CodeQL/Semgrep + quét dependency) — fail là dừng.</li>
+    <li>Build container image → đẩy lên <strong>ECR</strong>, registry tự <strong>scan + sign</strong>.</li>
+    <li>CI commit tag image mới vào <strong>GitOps Config Repo</strong> (nhánh dev/test/stg/prod).</li>
+    <li><strong>Argo CD Hub</strong> (Shared Services) thấy thay đổi → sync xuống <strong>Spoke Non-Prod</strong> (tự động).</li>
+    <li>Staging chạy → <strong>DAST</strong> (ZAP/Burp) quét URL staging.</li>
+    <li>Pass → <strong>Approval Gate</strong> (PR review + duyệt tay) → merge sang nhánh prod.</li>
+    <li>Argo CD sync <strong>Prod EKS</strong> trong <strong>sync window</strong> có kiểm soát.</li>
+  </ol>
+
+  <h3 id="arch-hoc-gi">Cần học gì để tự tin với sơ đồ này</h3>
+  <div class="grid2">
+    <div class="card"><h4>AWS Networking</h4><p>VPC, subnet, route table, IGW/NAT, Security Group vs NACL, Transit Gateway, PrivateLink, VPC Endpoint. Nguồn: AWS Skill Builder (free) + tự vẽ lại sơ đồ này bằng Terraform.</p></div>
+    <div class="card"><h4>AWS Landing Zone</h4><p>AWS Organizations, Control Tower, SCP (Service Control Policy), IAM cross-account role. Hiểu vì sao "account là hàng rào cứng nhất".</p></div>
+    <div class="card"><h4>EKS nâng cao</h4><p>IRSA, EKS Access Entry, Security Group for Pods, multi-cluster. Đây là phần chương 06 + kinh nghiệm thực hành.</p></div>
+    <div class="card"><h4>Zero Trust</h4><p>Nguyên tắc "không tin mặc định, xác minh mọi request": mTLS service-to-service, Cloudflare Access, NetworkPolicy, least privilege ở mọi tầng.</p></div>
+  </div>
+</section>
+
+<!-- ================= 13 ================= -->
+<section class="chapter" id="iac-cloud" data-chap="13 · IaC">
+  <div class="chap-kicker"><span class="n">13</span>Infrastructure as Code</div>
+  <h2>Terraform · Ansible · Cloud</h2>
+  <h3 id="terraform">Terraform — dựng hạ tầng bằng code</h3>
+  <p>Thay vì click trên console AWS, bạn <em>khai báo</em> hạ tầng trong file <code>.tf</code>; Terraform tính toán cần tạo/sửa/xóa gì để thực tế khớp khai báo. Lợi ích với DevSecOps: hạ tầng review được qua PR, quét được bằng Checkov <em>trước khi</em> tồn tại, và tái tạo được y hệt cho dev/staging/prod.</p>
+  <pre><code><span class="c"># main.tf — VPC + subnet tối giản (phiên bản thu nhỏ của Ingress VPC trong sơ đồ)</span>
+<span class="k">provider</span> "aws" { region = "ap-southeast-1" }
+
+<span class="k">resource</span> "aws_vpc" "ingress" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  tags = { Name = "ingress-vpc", Env = "lab" }
+}
+
+<span class="k">resource</span> "aws_subnet" "public_a" {
+  vpc_id            = aws_vpc.ingress.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "ap-southeast-1a"
+  tags = { Name = "public-az-a", Tier = "public" }
+}</code></pre>
+  <pre><code>terraform init      <span class="c"># tải provider</span>
+terraform plan      <span class="c"># xem TRƯỚC sẽ thay đổi gì — luôn đọc kỹ output này</span>
+terraform apply     <span class="c"># thực thi</span>
+terraform destroy   <span class="c"># dọn sạch (quan trọng khi lab để khỏi tốn tiền)</span>
+checkov -d .        <span class="c"># quét chính code Terraform này trong CI</span></code></pre>
+  <div class="callout danger"><span class="label">Cẩn thận</span><p>File <strong>terraform.tfstate</strong> chứa toàn bộ thông tin hạ tầng kể cả dữ liệu nhạy cảm. Không commit vào Git — lưu remote backend (S3 + DynamoDB lock) có mã hóa và giới hạn quyền đọc.</p></div>
+  <h3 id="ansible">Ansible — cấu hình máy chủ tự động</h3>
+  <p>Terraform <em>dựng</em> máy, Ansible <em>cấu hình</em> bên trong máy (cài gói, sửa config, hardening). Không cần agent — chỉ cần SSH. Với DevSecOps, Ansible hay dùng để áp <strong>CIS Benchmark hardening</strong> hàng loạt. Học: playbook, inventory, role, idempotency (chạy 2 lần kết quả như 1 lần).</p>
+  <h3 id="cloud-basics">AWS tối thiểu cho DevSecOps</h3>
+  <ul>
+    <li><strong>IAM</strong>: user/role/policy, STS assume-role, nguyên tắc least privilege — nền của mọi thứ.</li>
+    <li><strong>VPC networking</strong>: như chương 12.</li>
+    <li><strong>EC2, EKS, ECR, S3, KMS, Secrets Manager, CloudWatch, CloudTrail</strong> — đủ để vận hành pipeline và đọc sơ đồ.</li>
+    <li>Lab miễn phí phần lớn dịch vụ với AWS Free Tier; luôn đặt billing alarm trước khi bắt đầu.</li>
+  </ul>
+</section>
+
+<!-- ================= 14 ================= -->
+<section class="chapter" id="observability" data-chap="14 · Monitoring">
+  <div class="chap-kicker"><span class="n">14</span>Observability</div>
+  <h2>Giám sát &amp; Runtime security</h2>
+  <p>Deploy xong chưa phải là hết vòng đời — "an toàn trong toàn bộ vòng đời" của JD bao gồm cả lúc vận hành. Ba trụ observability: <strong>metrics</strong> (con số theo thời gian), <strong>logs</strong> (sự kiện chi tiết), <strong>traces</strong> (đường đi của một request qua các service).</p>
+  <div class="tablewrap"><table>
+    <tr><th>Nhu cầu</th><th>Tool chuẩn</th><th>Ghi chú</th></tr>
+    <tr><td>Thu metrics K8s</td><td><strong>Prometheus</strong></td><td>Pull model — tự cào <code>/metrics</code> của các service; ngôn ngữ truy vấn PromQL</td></tr>
+    <tr><td>Dashboard + cảnh báo</td><td><strong>Grafana</strong> + Alertmanager</td><td>Cài cả cụm một lần bằng Helm chart <code>kube-prometheus-stack</code> (lệnh ở chương 06)</td></tr>
+    <tr><td>Logs tập trung</td><td>Loki hoặc ELK/OpenSearch</td><td>Loki nhẹ, đi cặp với Grafana — hợp lab</td></tr>
+    <tr><td>Traces</td><td>Jaeger / Tempo + OpenTelemetry</td><td>Học sau cùng, khi đã có microservices</td></tr>
+    <tr><td><strong>Runtime security</strong></td><td><strong>Falco</strong></td><td>Soi syscall trong container: "shell mở trong container production", "đọc /etc/shadow", "kết nối ra IP lạ" → bắn cảnh báo tức thì</td></tr>
+  </table></div>
+  <p>Metrics đáng theo dõi cho chính pipeline (4 chỉ số DORA): tần suất deploy, lead time từ commit đến production, tỉ lệ deploy hỏng, thời gian khôi phục (MTTR). Đây là ngôn ngữ chung khi nói chuyện với quản lý về giá trị của CI/CD.</p>
+  <p>Trong sơ đồ của bạn, tầng này tương ứng: CloudWatch + GuardDuty (phát hiện đe dọa), Security Hub (tổng hợp findings), SIEM/SOC ở Security Account (phân tích + trực chiến), Falco/GuardDuty EKS ở phần "EKS Security Hardening".</p>
+</section>
+
+<!-- ================= 15 ================= -->
+<section class="chapter" id="du-an" data-chap="15 · Dự án">
+  <div class="chap-kicker"><span class="n">15</span>Portfolio</div>
+  <h2>Dự án end-to-end — đề bài để tự làm</h2>
+  <p>Mục tiêu: một repo GitHub demo được trọn vẹn trong 15 phút phỏng vấn. Toàn bộ chạy trên máy bạn (WSL2 + Docker Desktop + minikube), không tốn tiền cloud.</p>
+  <pre class="diagram"><code>push code ──► Jenkins ──► Gitleaks ──► build + unit test ──► SonarQube (gate)
+                 │
+                 ├─► Trivy fs (SCA) ──► docker build ──► Trivy image (gate)
+                 │
+                 ├─► push Harbor/registry ──► Cosign sign + Syft SBOM
+                 │
+                 └─► commit tag mới vào gitops-repo (nhánh dev)
+                              │
+        Argo CD (minikube) ◄──┘  auto-sync dev ──► smoke test ──► ZAP baseline
+                              │
+              [tay bạn] PR dev → prod + review ──► Argo CD sync prod namespace
+                              │
+              Prometheus + Grafana dashboard · Falco rule demo</code></pre>
+  <ol>
+    <li><strong>Tuần 1:</strong> viết app nhỏ có endpoint <code>/health</code> (Node/Python/Go) + Dockerfile multi-stage non-root + Helm chart. Tạo 2 repo: <code>myapp</code> (source) và <code>gitops-config</code> (manifest, nhánh dev/prod).</li>
+    <li><strong>Tuần 2:</strong> dựng Jenkins bằng Docker, viết Jenkinsfile theo khung chương 07, nối webhook từ GitHub (dùng ngrok cho lab).</li>
+    <li><strong>Tuần 3:</strong> gắn đủ security stage: Gitleaks, SonarQube + quality gate, Trivy fs/image, Cosign, SBOM. Cố tình commit một secret giả + một thư viện cũ để chứng minh pipeline chặn được.</li>
+    <li><strong>Tuần 4:</strong> cài Argo CD lên minikube, tạo 2 Application (dev auto-sync, prod manual), demo self-heal (sửa tay replicas trên cluster → Argo CD kéo về), demo rollback. Thêm ZAP baseline sau khi dev sync xong. Cài kube-prometheus-stack, chụp dashboard vào README.</li>
+  </ol>
+  <p><strong>README phải có:</strong> sơ đồ kiến trúc (vẽ bằng draw.io — bạn đã có kỹ năng này), bảng "lớp bảo vệ nào chặn loại tấn công nào", ảnh chụp pipeline fail vì gate, và mục "nếu có thêm thời gian tôi sẽ..." (Vault, Kyverno, multi-cluster) — thể hiện bạn biết đường đi tiếp.</p>
+</section>
+
+<!-- ================= 16 ================= -->
+<section class="chapter" id="tai-nguyen" data-chap="16 · Tài nguyên">
+  <div class="chap-kicker"><span class="n">16</span>Tài nguyên</div>
+  <h2>Tài nguyên · Chứng chỉ · Thuật ngữ</h2>
+  <h3 id="tai-lieu">Nguồn học đáng tiền/đáng thời gian</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Nguồn</th><th>Dùng cho</th><th>Phí</th></tr>
+    <tr><td>KodeKloud</td><td>Jenkins, Docker, K8s, Terraform — lab trong trình duyệt, hợp người mới nhất</td><td>Trả phí, đáng</td></tr>
+    <tr><td>TryHackMe — DevSecOps path</td><td>Tận dụng nền infosec sẵn có của bạn</td><td>Freemium</td></tr>
+    <tr><td>Kubernetes docs + "Kubernetes the Hard Way"</td><td>Hiểu sâu K8s sau khi đã biết dùng</td><td>Free</td></tr>
+    <tr><td>Jenkins docs (mục Pipeline) · Argo CD docs (Getting Started)</td><td>Tài liệu chính chủ đều rất tốt</td><td>Free</td></tr>
+    <tr><td>OWASP: Top 10, CI/CD Top 10, Cheat Sheet Series</td><td>Kiến thức nền bảo mật ứng dụng — chương 11 tóm tắt cả hai Top 10</td><td>Free</td></tr>
+    <tr><td>GitLab docs (mục CI/CD) + gitlab.com free tier</td><td>Học GitLab CI thực hành (chương 08) — tạo project, chạy pipeline miễn phí</td><td>Free</td></tr>
+    <tr><td>SLSA.dev · Sigstore docs</td><td>Chuỗi cung ứng: provenance, ký keyless — đọc sau chương 11</td><td>Free</td></tr>
+    <tr><td>AWS Skill Builder</td><td>VPC, IAM, EKS cơ bản</td><td>Free tier</td></tr>
+  </table></div>
+  <h3 id="chung-chi">Chứng chỉ theo thứ tự nên lấy</h3>
+  <ol>
+    <li><strong>CKA</strong> (Certified Kubernetes Administrator) — thi thực hành 100%, giá trị cao, học xong chương 06 + thực hành là thi được.</li>
+    <li><strong>CKS</strong> (Certified Kubernetes Security Specialist) — chứng chỉ "đắt giá" nhất cho DevSecOps; yêu cầu có CKA trước.</li>
+    <li>Tùy chọn: AWS Solutions Architect Associate (nếu công ty nặng AWS như sơ đồ của bạn), CDP của Practical DevSecOps.</li>
+  </ol>
+  <h3 id="glossary">Bảng thuật ngữ tra nhanh</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Thuật ngữ</th><th>Nghĩa ngắn gọn</th></tr>
+    <tr><td>Pipeline</td><td>Chuỗi bước tự động: build → test → scan → deploy</td></tr>
+    <tr><td>Artifact</td><td>Sản phẩm của build: file jar, container image, gói zip</td></tr>
+    <tr><td>Shift-left</td><td>Đẩy kiểm tra bảo mật về sớm nhất trong SDLC</td></tr>
+    <tr><td>SAST / DAST</td><td>Quét code tĩnh (chưa chạy) / quét app đang chạy</td></tr>
+    <tr><td>SCA</td><td>Software Composition Analysis — quét thư viện bên thứ ba tìm CVE</td></tr>
+    <tr><td>CVE</td><td>Mã định danh lỗ hổng công khai (vd CVE-2021-44228 = Log4Shell)</td></tr>
+    <tr><td>SBOM</td><td>Software Bill of Materials — bảng kê mọi thành phần trong phần mềm</td></tr>
+    <tr><td>Quality gate</td><td>Ngưỡng bắt buộc — không đạt là pipeline fail, không cho đi tiếp</td></tr>
+    <tr><td>GitOps</td><td>Git là nguồn chân lý; controller tự đồng bộ cluster theo Git</td></tr>
+    <tr><td>Drift</td><td>Trạng thái thực tế lệch khỏi khai báo (Git/Terraform)</td></tr>
+    <tr><td>Self-heal</td><td>Tự phát hiện drift và đưa về trạng thái khai báo</td></tr>
+    <tr><td>Pull-based CD</td><td>Agent trong cluster tự kéo thay đổi về (Argo CD) — CI không cần quyền vào cluster</td></tr>
+    <tr><td>Hub-and-Spoke</td><td>Một điểm điều khiển trung tâm (hub) quản lý nhiều cluster đích (spoke)</td></tr>
+    <tr><td>Approval gate</td><td>Chốt duyệt tay trước khi lên môi trường nhạy cảm</td></tr>
+    <tr><td>Canary / Blue-Green</td><td>Deploy cho 5% người dùng trước / dựng bản mới song song rồi chuyển traffic</td></tr>
+    <tr><td>Immutable infrastructure</td><td>Không sửa máy đang chạy — build image mới, thay thế</td></tr>
+    <tr><td>VPC / Subnet / CIDR</td><td>Mạng riêng ảo trên cloud / ngăn mạng con / cách ghi dải IP</td></tr>
+    <tr><td>DMZ</td><td>Vùng đệm tiếp xúc Internet, cách ly với mạng trong</td></tr>
+    <tr><td>Transit Gateway</td><td>Router trung tâm nối nhiều VPC, kiểm soát bằng route table</td></tr>
+    <tr><td>PrivateLink</td><td>Expose một service điểm-tới-điểm giữa các VPC, không mở cả mạng</td></tr>
+    <tr><td>mTLS</td><td>TLS hai chiều — cả client lẫn server xác thực nhau bằng chứng chỉ</td></tr>
+    <tr><td>Zero Trust</td><td>Không tin mặc định theo vị trí mạng; xác minh danh tính mọi request</td></tr>
+    <tr><td>Least privilege</td><td>Cấp đúng quyền tối thiểu đủ làm việc, không hơn</td></tr>
+    <tr><td>RBAC / IRSA</td><td>Phân quyền theo vai trò trong K8s / cấp IAM role cho từng ServiceAccount trên EKS</td></tr>
+    <tr><td>Admission controller</td><td>Chốt chặn xét duyệt mọi resource trước khi vào cluster (Kyverno/OPA)</td></tr>
+    <tr><td>WORM</td><td>Write Once Read Many — log ghi xong không sửa/xóa được</td></tr>
+    <tr><td>SIEM / SOC</td><td>Hệ thống gom + phân tích log an ninh / đội trực giám sát an ninh</td></tr>
+    <tr><td>Supply chain attack</td><td>Tấn công qua chuỗi cung ứng phần mềm: thư viện, pipeline, image</td></tr>
+    <tr><td>PPE</td><td>Poisoned Pipeline Execution — chiếm quyền thực thi pipeline qua file cấu hình pipeline hoặc file mà nó tin dùng</td></tr>
+    <tr><td>Dependency confusion / Typosquatting</td><td>Đăng gói trùng tên gói nội bộ lên registry public / gói tên gần giống chờ người gõ nhầm</td></tr>
+    <tr><td>SLSA</td><td>Thang mức tin cậy quá trình build (L0–L3): provenance → ký số → build cách ly</td></tr>
+    <tr><td>Provenance</td><td>Hồ sơ đính kèm artifact: build từ source nào, bằng gì, lúc nào, bởi ai</td></tr>
+    <tr><td>Keyless signing</td><td>Ký bằng danh tính OIDC ngắn hạn (Sigstore: Fulcio + Rekor) — không phải cất giữ private key</td></tr>
+    <tr><td>Runner / Executor</td><td>Máy thợ chạy job GitLab CI / môi trường nó thực thi job (shell, docker, kubernetes)</td></tr>
+    <tr><td>Merge Request (MR)</td><td>Tên GitLab của Pull Request</td></tr>
+    <tr><td>Masked / Protected variable</td><td>Biến CI bị che trong log / chỉ cấp cho pipeline trên nhánh được bảo vệ</td></tr>
+    <tr><td>OIDC (trong CI/CD)</td><td>Pipeline nhận token danh tính ngắn hạn để đổi lấy quyền cloud — thay cho access key tĩnh</td></tr>
+    <tr><td>Kaniko</td><td>Build container image không cần Docker daemon — runner không phải chạy privileged</td></tr>
+    <tr><td>Landing Zone</td><td>Bộ khung AWS multi-account chuẩn: tách biệt, log tập trung, guardrail</td></tr>
+  </table></div>
+
+  <div class="footer">
+    <p>Biên soạn theo yêu cầu học DevSecOps từ số 0 — bám JD "CI/CD an toàn toàn vòng đời hướng DevSecOps" và sơ đồ hạ tầng Diagram V2 (multi-account AWS / TGW inspection / Zero Trust). Cập nhật tháng 07/2026.</p>
+  </div>
+</section>
+
+</div><!-- /main -->
+
+<script>
+(function(){
+  var $=function(s,c){return (c||document).querySelector(s)};
+  var $$=function(s,c){return Array.prototype.slice.call((c||document).querySelectorAll(s))};
+
+  /* ---- mobile menu ---- */
+  var sb=$('#sidebar'), mb=$('#menuBtn');
+  mb.addEventListener('click',function(){sb.classList.toggle('open')});
+  sb.addEventListener('click',function(e){ if(e.target.closest('a')) sb.classList.remove('open') });
+
+  /* ---- copy buttons ---- */
+  $$('pre').forEach(function(pre){
+    if(pre.classList.contains('diagram')) return;
+    var b=document.createElement('button');
+    b.className='copy-btn'; b.type='button'; b.textContent='Copy';
+    b.addEventListener('click',function(){
+      var t=pre.querySelector('code').innerText;
+      (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){
+        b.textContent='Đã copy ✓'; setTimeout(function(){b.textContent='Copy'},1600);
+      }).catch(function(){ b.textContent='Lỗi' });
+    });
+    pre.appendChild(b);
+  });
+
+  /* ---- diacritic-insensitive normalize ---- */
+  function norm(s){
+    return s.toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .replace(/đ/g,'d');
+  }
+
+  /* ---- build search index ---- */
+  var index=[];
+  $$('section.chapter').forEach(function(sec){
+    var chap=sec.getAttribute('data-chap')||'';
+    var curHead=$('h2',sec)?$('h2',sec).textContent:''; var curId=sec.id;
+    $$('h2,h3,h4,p,li,td',sec).forEach(function(el){
+      if(el.closest('.results'))return;
+      var tag=el.tagName;
+      if(tag==='H2'||tag==='H3'||tag==='H4'){
+        curHead=el.textContent;
+        curId=el.id||sec.id;
+      }
+      var txt=el.textContent.replace(/\s+/g,' ').trim();
+      if(txt.length<3)return;
+      index.push({chap:chap,head:curHead,id:curId,text:txt,ntext:norm(txt),isHead:(tag[0]==='H')});
+    });
+  });
+
+  /* ---- search ---- */
+  var box=$('#searchBox'), res=$('#results'), tocLinks=$$('#toc a'), selIdx=-1;
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+  function snippet(text,q){
+    var n=norm(text), i=n.indexOf(q);
+    if(i<0)return esc(text.slice(0,90));
+    var st=Math.max(0,i-38), en=Math.min(text.length,i+q.length+52);
+    var pre=(st>0?'…':'')+esc(text.slice(st,i));
+    var hit='<mark>'+esc(text.slice(i,i+q.length))+'</mark>';
+    var post=esc(text.slice(i+q.length,en))+(en<text.length?'…':'');
+    return pre+hit+post;
+  }
+  function doSearch(){
+    var q=norm(box.value.trim()); selIdx=-1;
+    /* filter TOC too */
+    tocLinks.forEach(function(a){
+      a.classList.toggle('hidden', q.length>=2 && norm(a.textContent).indexOf(q)<0);
+    });
+    if(q.length<2){res.classList.remove('show');res.innerHTML='';return}
+    var seen={}, out=[];
+    for(var i=0;i<index.length&&out.length<18;i++){
+      var it=index[i];
+      if(it.ntext.indexOf(q)>=0){
+        var key=it.id+'|'+it.head+(it.isHead?'|h':'|'+out.length);
+        if(seen[it.id+it.head] && !it.isHead && out.length>2) continue;
+        if(it.isHead && seen['h'+it.id+it.head])continue;
+        seen[it.id+it.head]=1; if(it.isHead)seen['h'+it.id+it.head]=1;
+        out.push(it);
+      }
+    }
+    if(!out.length){res.innerHTML='<div class="r-empty">Không tìm thấy "'+esc(box.value)+'" — thử từ khóa khác (vd: trivy, ingress, lo trinh…)</div>';res.classList.add('show');return}
+    res.innerHTML=out.map(function(it,i){
+      return '<a class="r-item" data-i="'+i+'" href="#'+it.id+'">'
+        +'<span class="r-chap">'+esc(it.chap)+'</span>'
+        +'<div class="r-head">'+esc(it.head)+'</div>'
+        +'<div class="r-snip">'+snippet(it.text,q)+'</div></a>';
+    }).join('');
+    res.classList.add('show');
+  }
+  function go(a){
+    res.classList.remove('show'); sb.classList.remove('open');
+    var id=a.getAttribute('href').slice(1), el=document.getElementById(id);
+    if(el){ el.scrollIntoView({block:'start'}); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+  }
+  box.addEventListener('input',doSearch);
+  box.addEventListener('keydown',function(e){
+    var items=$$('.r-item',res);
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+      e.preventDefault();
+      selIdx=e.key==='ArrowDown'?Math.min(selIdx+1,items.length-1):Math.max(selIdx-1,0);
+      items.forEach(function(it,i){it.classList.toggle('sel',i===selIdx)});
+      if(items[selIdx])items[selIdx].scrollIntoView({block:'nearest'});
+    }else if(e.key==='Enter'&&items[selIdx]){ e.preventDefault(); go(items[selIdx]); }
+    else if(e.key==='Escape'){ res.classList.remove('show'); }
+  });
+  res.addEventListener('click',function(e){
+    var a=e.target.closest('.r-item'); if(a){e.preventDefault();go(a);location.hash=a.getAttribute('href')}
+  });
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('.searchwrap')) res.classList.remove('show');
+  });
+
+  /* ---- scroll spy ---- */
+  var chapters=$$('section.chapter');
+  var spy=new IntersectionObserver(function(entries){
+    entries.forEach(function(en){
+      if(en.isIntersecting){
+        var id=en.target.id;
+        tocLinks.forEach(function(a){a.classList.toggle('active',a.getAttribute('href')==='#'+id)});
+      }
+    });
+  },{rootMargin:'-15% 0px -75% 0px'});
+  chapters.forEach(function(c){spy.observe(c)});
+})();
+</script>
+
+</body>
+</html>
